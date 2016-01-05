@@ -1,0 +1,17 @@
+# cache, pyc, etc.
+__pycache__/
+.cache
+*.pyc
+
+# auto-generated files
+build/
+
+# emacs
+*~
+\#*\#
+.\#*
+
+# vim
+*.swp
+.*.s[a-w][a-z]
+.s[a-w][a-z]
