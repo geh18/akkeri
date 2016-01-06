@@ -13,12 +13,14 @@ app.config.from_object(
 bootstrap = Bootstrap(app)
 db = SQLAlchemy(app)
 
-# from models import User, ...
-
+import models
+from admin import setup_admin
+admin = setup_admin(app, db)
 
 @app.route('/')
 def hello():
     return render_template('hello.html')
 
 if __name__ == '__main__':
-    print "For development server, use manage.py"
+    print "For development server, use"
+    print "  manage.py runserver --host=0.0.0.0 --port=xxxx"
