@@ -169,7 +169,7 @@ class User(db.Model):
         """
         if isinstance(plaintext, unicode):
             plaintext = plaintext.encode('utf-8')
-        return bcrypt.hashpw(plaintext, self.password) == self.password
+        return bcrypt.hashpw(plaintext, str(self.password)) == self.password
 
     @property
     def is_authenticated(self):
@@ -183,7 +183,6 @@ class User(db.Model):
     def is_anonymous(self):
         return False
 
-    @property
     def get_id(self):
         return u'%d' % self.id
 

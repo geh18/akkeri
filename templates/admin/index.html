@@ -1,0 +1,35 @@
+{% extends "admin/master.html" %}
+
+{% block body %}
+{{ super() }}
+<div class="row-fluid">
+    <div>
+        {% if current_user.is_authenticated %}
+        <p>You are logged in as <strong>{{ current_user.username }}</strong></p>
+        <p><a href="{{ url_for('admin.logout_view') }}">Logout</a></p>
+        {% else %}
+        <h1>Login</h1>
+        <p class="lead">
+        Please login to the Akkeri admin system.
+        </p>
+        <form class="login-form" method="POST" action="">
+            {{ form.hidden_tag() if form.hidden_tag }}
+            {% for f in form if f.type != 'CSRFTokenField' %}
+            <div>
+                {{ f.label(class_="label-"+f.name) }}
+                {{ f(class_="input-"+f.name) }}
+                {% if f.errors %}
+                <ul class="form-errors">
+                    {% for e in f.errors %}
+                    <li>{{ e }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+            {% endfor %}
+            <button class="btn btn-primary" type="submit">Submit</button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+{% endblock body %}
