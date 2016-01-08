@@ -4,6 +4,7 @@ from flask_admin.contrib.sqla import ModelView
 import flask_login as login
 import bcrypt
 
+
 class AdminModelView(ModelView):
     """
     Base class for password-protected model views.
@@ -13,6 +14,7 @@ class AdminModelView(ModelView):
 
     def inaccessible_callback(self, name, **kwargs):
         return redirect(url_for('login', next=request.url))
+
 
 class UserModelView(AdminModelView):
     """
@@ -28,6 +30,7 @@ class UserModelView(AdminModelView):
             pw = pw.encode('utf-8')
         form.password.data = bcrypt.hashpw(pw, bcrypt.gensalt())
         super(UserModelView, self).create_model(form)
+
 
 def setup_admin(app, db):
     import models

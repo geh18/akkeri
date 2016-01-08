@@ -14,12 +14,11 @@ bootstrap = Bootstrap(app)
 db = SQLAlchemy(app)
 
 import models
-from admin import setup_admin
+from views.admin import setup_admin
 admin = setup_admin(app, db)
 
-@app.route('/')
-def hello():
-    return render_template('hello.html')
+from views.akkeri import frontpage
+
 
 if __name__ == '__main__':
     print "For development server, use"
