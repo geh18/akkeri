@@ -1,6 +1,8 @@
 # coding: utf-8
 import bcrypt
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint, text
+from sqlalchemy import (
+    Boolean, Column, DateTime, ForeignKey, Integer, String, Text,
+    UniqueConstraint, text)
 from sqlalchemy.orm import relationship
 from app import db
 #from sqlalchemy.ext.declarative import declarative_base
@@ -11,7 +13,45 @@ from app import db
 
 # NOTE:
 # Much of the code for the model classes was initially generated using sqlacodegen
+#
 
+######### Table objects
+
+## Pure (or almost-pure) association tables for M2M relationships
+## are represented as Table objects rather than model classes. They are
+## collected here at the top for easy reference.
+
+## These are the tables used for tagging attachments, images and posts.
+## Extra columns not represented (and not important): id, tagged_at.
+
+x_attachment_tag = db.Table(
+    'x_attachment_tag', db.metadata,
+    Column('attachment_id', Integer, ForeignKey('attachments.id')),
+    Column('tag_id', Integer, ForeignKey('tags.id'))
+)
+
+x_image_tag = db.Table(
+    'x_image_tag', db.metadata,
+    Column('image_id', Integer, ForeignKey('images.id')),
+    Column('tag_id', Integer, ForeignKey('tags.id'))
+)
+
+x_post_tag = db.Table(
+    'x_post_tag', db.metadata,
+    Column('post_id', Integer, ForeignKey('posts.id')),
+    Column('tag_id', Integer, ForeignKey('tags.id'))
+)
+
+## Roles for users. Extra columns not represented: id, granted_at.
+
+x_user_role = db.Table(
+    'x_user_role', db.metadata,
+    Column('user_id', Integer, ForeignKey('users.id')),
+    Column('role_id', Integer, ForeignKey('roles.id'))
+);
+
+
+########## Model classes
 
 class Attachment(db.Model):
     __tablename__ = 'attachments'
@@ -33,6 +73,7 @@ class Attachment(db.Model):
     owner = relationship(u'User')
     image = relationship(u'Image')
     posts = relationship('XPostAttachment', back_populates='attachment')
+    tags = relationship('Tag', secondary=x_attachment_tag, back_populates='attachments')
 
     def __unicode__(self):
         return self.attachment_path
@@ -74,6 +115,7 @@ class Image(db.Model):
 
     owner = relationship(u'User')
     posts = relationship('XPostImage', back_populates='image')
+    tags = relationship('Tag', secondary=x_image_tag, back_populates='images')
 
     def __unicode__(self):
         return self.image_path
@@ -128,7 +170,7 @@ class Post(db.Model):
     post_type = relationship(u'PostType')
     images = relationship('XPostImage', back_populates='post')
     attachments = relationship('XPostAttachment', back_populates='post')
-    tags = relationship('XPostTag', back_populates='post')
+    tags = relationship('Tag', secondary=x_post_tag, back_populates='posts')
 
     def __unicode__(self):
         return u'%s [%d]' % (self.title, self.id)
@@ -140,6 +182,8 @@ class Role(db.Model):
     id = Column(Integer, primary_key=True, server_default=text("nextval('roles_id_seq'::regclass)"))
     label = Column(String, nullable=False, unique=True)
     description = Column(String)
+
+    users = relationship('User', secondary=x_user_role, back_populates='roles')
 
     def __unicode__(self):
         return self.label
@@ -156,7 +200,9 @@ class Tag(db.Model):
     for_posts = Column(Boolean, nullable=False, server_default=text("true"))
     created = Column(DateTime, server_default=text("now()"))
 
-    posts = relationship('XPostTag', back_populates='tag')
+    posts = relationship('Post', secondary=x_post_tag, back_populates='tags')
+    images = relationship('Image', secondary=x_image_tag, back_populates='tags')
+    attachments = relationship('Attachment', secondary=x_attachment_tag, back_populates='tags')
 
     def __unicode__(self):
         return self.name
@@ -176,6 +222,8 @@ class User(db.Model):
     is_superuser = Column(Boolean, nullable=False, server_default=text("false"))
     created = Column(DateTime, server_default=text("now()"))
     changed = Column(DateTime, server_default=text("now()"))
+
+    roles = relationship('Role', secondary=x_user_role, back_populates='users')
 
     def __unicode__(self):
         return self.username
@@ -214,35 +262,7 @@ class User(db.Model):
     def get_id(self):
         return u'%d' % self.id
 
-class XAttachmentTag(db.Model):
-    __tablename__ = 'x_attachment_tag'
-    __table_args__ = (
-        UniqueConstraint('attachment_id', 'tag_id'),
-    )
-
-    id = Column(Integer, primary_key=True, server_default=text("nextval('x_attachment_tag_id_seq'::regclass)"))
-    attachment_id = Column(ForeignKey(u'attachments.id', ondelete=u'CASCADE', onupdate=u'CASCADE'))
-    tag_id = Column(ForeignKey(u'tags.id', ondelete=u'CASCADE', onupdate=u'CASCADE'))
-    tagged_at = Column(DateTime, server_default=text("now()"))
-
-    attachment = relationship(u'Attachment')
-    tag = relationship(u'Tag')
-
-
-class XImageTag(db.Model):
-    __tablename__ = 'x_image_tag'
-    __table_args__ = (
-        UniqueConstraint('image_id', 'tag_id'),
-    )
-
-    id = Column(Integer, primary_key=True, server_default=text("nextval('x_image_tag_id_seq'::regclass)"))
-    image_id = Column(ForeignKey(u'images.id', ondelete=u'CASCADE', onupdate=u'CASCADE'))
-    tag_id = Column(ForeignKey(u'tags.id', ondelete=u'CASCADE', onupdate=u'CASCADE'))
-    tagged_at = Column(DateTime, server_default=text("now()"))
-
-    image = relationship(u'Image')
-    tag = relationship(u'Tag')
-
+## Association models, with extra info attached to the link.
 
 class XPostAttachment(db.Model):
     __tablename__ = 'x_post_attachment'
@@ -257,6 +277,9 @@ class XPostAttachment(db.Model):
 
     attachment = relationship(u'Attachment', back_populates='posts')
     post = relationship(u'Post', back_populates='attachments')
+
+    def __unicode__(self):
+        return u'<XPostAttachment %d: %s for %s>' % (self.id, self.attachment, self.post)
 
 
 class XPostImage(db.Model):
@@ -273,32 +296,5 @@ class XPostImage(db.Model):
     image = relationship(u'Image', back_populates='posts')
     post = relationship(u'Post', back_populates='images')
 
-
-class XPostTag(db.Model):
-    __tablename__ = 'x_post_tag'
-    __table_args__ = (
-        UniqueConstraint('post_id', 'tag_id'),
-    )
-
-    id = Column(Integer, primary_key=True, server_default=text("nextval('x_post_tag_id_seq'::regclass)"))
-    post_id = Column(ForeignKey(u'posts.id', ondelete=u'CASCADE', onupdate=u'CASCADE'))
-    tag_id = Column(ForeignKey(u'tags.id', ondelete=u'CASCADE', onupdate=u'CASCADE'))
-    tagged_at = Column(DateTime, server_default=text("now()"))
-
-    post = relationship(u'Post', back_populates='tags')
-    tag = relationship(u'Tag', back_populates='posts')
-
-
-class XUserRole(db.Model):
-    __tablename__ = 'x_user_role'
-    __table_args__ = (
-        UniqueConstraint('user_id', 'role_id'),
-    )
-
-    id = Column(Integer, primary_key=True, server_default=text("nextval('x_user_role_id_seq'::regclass)"))
-    user_id = Column(ForeignKey(u'users.id', ondelete=u'CASCADE', onupdate=u'CASCADE'), nullable=False)
-    role_id = Column(ForeignKey(u'roles.id', ondelete=u'CASCADE', onupdate=u'CASCADE'), nullable=False)
-    granted_at = Column(DateTime, server_default=text("now()"))
-
-    role = relationship(u'Role')
-    user = relationship(u'User')
+    def __unicode__(self):
+        return u'<XPostImage %d: %s for %s>' % (self.id, self.image, self.post)
