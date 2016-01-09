@@ -32,6 +32,10 @@ class Attachment(db.Model):
 
     owner = relationship(u'User')
     image = relationship(u'Image')
+    posts = relationship('XPostAttachment', back_populates='attachment')
+
+    def __unicode__(self):
+        return self.attachment_path
 
 
 class Featured(db.Model):
@@ -69,6 +73,10 @@ class Image(db.Model):
     changed = Column(DateTime, server_default=text("now()"))
 
     owner = relationship(u'User')
+    posts = relationship('XPostImage', back_populates='image')
+
+    def __unicode__(self):
+        return self.image_path
 
 
 class Language(db.Model):
@@ -79,6 +87,9 @@ class Language(db.Model):
     name_is = Column(String)
     name_en = Column(String)
 
+    def __unicode__(self):
+        return u'%s - %s' % (self.code, self.name_en)
+
 
 class PostType(db.Model):
     __tablename__ = 'post_types'
@@ -87,6 +98,9 @@ class PostType(db.Model):
     label = Column(String, nullable=False, unique=True)
     name_is = Column(String)
     name_en = Column(String)
+
+    def __unicode__(self):
+        return u'%s - %s' % (self.label, self.name_en)
 
 
 class Post(db.Model):
@@ -110,8 +124,14 @@ class Post(db.Model):
 
     author = relationship(u'User', primaryjoin='Post.author_id == User.id')
     language = relationship(u'Language')
-    user = relationship(u'User', primaryjoin='Post.last_changed_by == User.id')
+    last_changed_by_user = relationship(u'User', primaryjoin='Post.last_changed_by == User.id')
     post_type = relationship(u'PostType')
+    images = relationship('XPostImage', back_populates='post')
+    attachments = relationship('XPostAttachment', back_populates='post')
+    tags = relationship('XPostTag', back_populates='post')
+
+    def __unicode__(self):
+        return u'%s [%d]' % (self.title, self.id)
 
 
 class Role(db.Model):
@@ -120,6 +140,9 @@ class Role(db.Model):
     id = Column(Integer, primary_key=True, server_default=text("nextval('roles_id_seq'::regclass)"))
     label = Column(String, nullable=False, unique=True)
     description = Column(String)
+
+    def __unicode__(self):
+        return self.label
 
 
 class Tag(db.Model):
@@ -132,6 +155,11 @@ class Tag(db.Model):
     for_attachments = Column(Boolean, nullable=False, server_default=text("true"))
     for_posts = Column(Boolean, nullable=False, server_default=text("true"))
     created = Column(DateTime, server_default=text("now()"))
+
+    posts = relationship('XPostTag', back_populates='tag')
+
+    def __unicode__(self):
+        return self.name
 
 
 class User(db.Model):
@@ -149,8 +177,8 @@ class User(db.Model):
     created = Column(DateTime, server_default=text("now()"))
     changed = Column(DateTime, server_default=text("now()"))
 
-    def __repr__(self):
-        return u'<User: %d %s>' % (self.id, self.username)
+    def __unicode__(self):
+        return self.username
 
     def set_password(self, plaintext):
         """
@@ -227,8 +255,8 @@ class XPostAttachment(db.Model):
     custom_caption = Column(Text)
     linked_at = Column(DateTime, server_default=text("now()"))
 
-    attachment = relationship(u'Attachment')
-    post = relationship(u'Post')
+    attachment = relationship(u'Attachment', back_populates='posts')
+    post = relationship(u'Post', back_populates='attachments')
 
 
 class XPostImage(db.Model):
@@ -242,8 +270,8 @@ class XPostImage(db.Model):
     custom_caption = Column(Text)
     linked_at = Column(DateTime, server_default=text("now()"))
 
-    image = relationship(u'Image')
-    post = relationship(u'Post')
+    image = relationship(u'Image', back_populates='posts')
+    post = relationship(u'Post', back_populates='images')
 
 
 class XPostTag(db.Model):
@@ -257,8 +285,8 @@ class XPostTag(db.Model):
     tag_id = Column(ForeignKey(u'tags.id', ondelete=u'CASCADE', onupdate=u'CASCADE'))
     tagged_at = Column(DateTime, server_default=text("now()"))
 
-    post = relationship(u'Post')
-    tag = relationship(u'Tag')
+    post = relationship(u'Post', back_populates='tags')
+    tag = relationship(u'Tag', back_populates='posts')
 
 
 class XUserRole(db.Model):
