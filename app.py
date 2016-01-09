@@ -26,7 +26,7 @@ def load_user(id):
 from views.admin import setup_admin
 admin = setup_admin(app, db, login_manager)
 
-from views.akkeri import frontpage
+from views.akkeri import index
 
 
 if __name__ == '__main__':
