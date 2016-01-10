@@ -50,6 +50,7 @@ class ImageModelView(ModelView):
 	# raise Exception(STATIC_IMAGES)
 	form_extra_fields = {
 		'image_path': form.ImageUploadField('Image',
+                                            base_path=STATIC_IMAGES,
                                             url_relative_path='images/',
 											thumbnail_size=(100, 100, True))
 	}
