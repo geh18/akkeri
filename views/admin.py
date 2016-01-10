@@ -1,12 +1,14 @@
-from flask_admin import Admin, AdminIndexView, helpers, expose
+from flask_admin import Admin, AdminIndexView, helpers, expose, form
 from flask import url_for, redirect, request
 from flask_admin.contrib.sqla import ModelView
 import flask_login
 import bcrypt
 from forms import LoginForm
+from config import STATIC_IMAGES
+
 
 class AkkeriAdminIndexView(AdminIndexView):
-
+	# AdminIndexView: Default view for /admin/ url
     @expose('/')
     def index(self):
         if not flask_login.current_user.is_authenticated:
@@ -40,11 +42,23 @@ class AdminModelView(ModelView):
     def inaccessible_callback(self, name, **kwargs):
         return redirect(url_for('login', next=request.url))
 
+class ImageModelView(ModelView):
+	# form_edit_rules = ('title', 'image_path', 'caption')
+	# form_create_rules = form_edit_rules
+	column_list = ('title', 'image_path', 'caption')
+	# raise Exception(STATIC_IMAGES)
+	form_extra_fields = {
+		'image_path': form.ImageUploadField('Image',
+											base_path=STATIC_IMAGES,
+											endpoint='my_images',
+											thumbnail_size=(100, 100, True))
+	}
+
 
 class UserModelView(AdminModelView):
     """
     Special settings for user class.
-    """
+    """	
     form_edit_rules = (
             'username', 'email', 'fullname', 'active', 'is_superuser')
     column_list = ('username', 'email', 'fullname', 'created')
@@ -59,6 +73,7 @@ class UserModelView(AdminModelView):
 
 def setup_admin(app, db, login_manager):
     import models
+    
     admin = Admin(
         app, name='Akkeri', index_view=AkkeriAdminIndexView(),
         template_mode='bootstrap3')
@@ -68,6 +83,8 @@ def setup_admin(app, db, login_manager):
         model = getattr(models, attr)
         if attr == 'User':
             admin.add_view(UserModelView(model, db.session))
+        elif attr == 'Image':
+			admin.add_view(ImageModelView(model, db.session))
         elif model.__bases__ and db.Model in model.__bases__:
             admin.add_view(AdminModelView(model, db.session))
     return admin

@@ -1,4 +1,7 @@
 import os
+import os.path as op
+
+STATIC_IMAGES = op.join(op.dirname(__file__), 'static/images')
 
 class Config(object):
     DEBUG = False
