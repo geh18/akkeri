@@ -21,3 +21,5 @@ build/
 # PROJECT-SPECIFIC
 
 static/images/
+static/css/
+.sass-cache/
