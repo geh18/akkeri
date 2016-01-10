@@ -32,6 +32,7 @@ class AkkeriAdminIndexView(AdminIndexView):
         flask_login.logout_user()
         return redirect(url_for('.index'))
 
+
 class AdminModelView(ModelView):
     """
     Base class for password-protected model views.
@@ -49,8 +50,7 @@ class ImageModelView(ModelView):
 	# raise Exception(STATIC_IMAGES)
 	form_extra_fields = {
 		'image_path': form.ImageUploadField('Image',
-											base_path=STATIC_IMAGES,
-											endpoint='my_images',
+                                            url_relative_path='images/',
 											thumbnail_size=(100, 100, True))
 	}
 
@@ -58,7 +58,7 @@ class ImageModelView(ModelView):
 class UserModelView(AdminModelView):
     """
     Special settings for user class.
-    """	
+    """
     form_edit_rules = (
             'username', 'email', 'fullname', 'active', 'is_superuser')
     column_list = ('username', 'email', 'fullname', 'created')
@@ -73,10 +73,11 @@ class UserModelView(AdminModelView):
 
 def setup_admin(app, db, login_manager):
     import models
-    
+
     admin = Admin(
         app, name='Akkeri', index_view=AkkeriAdminIndexView(),
         template_mode='bootstrap3')
+
     for attr in dir(models):
         if attr[0]=='X' or not attr[0].isupper():
             continue
