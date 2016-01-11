@@ -6,7 +6,16 @@
         <h1>Akkeri</h1>
     </div>
     <div>
-        <p>Work in progress...</p>
+        <h2>Nýjustu færslur</h2>
+        <ul>
+        {% for post in posts %}
+        <li>
+            <h3>{{ post.title |safe }}</h3>
+            <div><small>{{ post.published }} | {{ post.post_type.name_is }}</small></div>
+            <p>{{ post.summary | safe }}</p>
+        </li>
+        {% endfor %}
+        </ul>
     </div>
 </div>
 {% endblock %}
