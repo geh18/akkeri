@@ -6,6 +6,8 @@ from flask.ext.script import Manager
 from flask.ext.bootstrap import Bootstrap
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
+from akkeri.decorators import templated
+from akkeri.thumbnailer import Thumbnail
 
 app = Flask(__name__)
 app.config.from_object(
@@ -13,6 +15,7 @@ app.config.from_object(
 
 bootstrap = Bootstrap(app)
 db = SQLAlchemy(app)
+thumb = Thumbnail(app)
 
 import models
 

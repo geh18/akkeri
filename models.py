@@ -2,7 +2,7 @@
 import bcrypt
 from sqlalchemy import (
     Boolean, Column, DateTime, ForeignKey, Integer, String, Text,
-    UniqueConstraint, text)
+    UniqueConstraint, text, desc)
 from sqlalchemy.orm import relationship
 from app import db
 
@@ -190,12 +190,18 @@ class Post(db.Model):
     last_changed_by_user = relationship(
         u'User', primaryjoin='Post.last_changed_by == User.id')
     post_type = relationship(u'PostType')
-    images = relationship('XPostImage', back_populates='post')
-    attachments = relationship('XPostAttachment', back_populates='post')
+    images = relationship('XPostImage', back_populates='post',
+            order_by=lambda: XPostImage.image_order)
+    attachments = relationship('XPostAttachment', back_populates='post',
+            order_by=lambda: XPostAttachment.attachment_order)
     tags = relationship('Tag', secondary=x_post_tag, back_populates='posts')
 
     def __unicode__(self):
         return u'%s [%d]' % (self.title, self.id)
+
+    @property
+    def first_image(self):
+        return self.images[0] if self.images else None
 
 
 class Role(db.Model):
@@ -338,6 +344,30 @@ class XPostImage(db.Model):
 
     image = relationship(u'Image', back_populates='posts')
     post = relationship(u'Post', back_populates='images')
+
+    @property
+    def image_path(self):
+        return self.image.image_path
+
+    @property
+    def title(self):
+        return self.custom_title or self.image.title or u''
+
+    @property
+    def caption(self):
+        return self.custom_caption or self.image.caption or u''
+
+    @property
+    def width(self):
+        return self.image.width
+
+    @property
+    def height(self):
+        return self.image.height
+
+    @property
+    def bytes(self):
+        return self.image.bytes
 
     def __unicode__(self):
         return u'<XPostImage %d: %s for %s>' % (self.id, self.image, self.post)

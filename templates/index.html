@@ -6,7 +6,21 @@
         <h1>Akkeri</h1>
     </div>
     <div>
-        <p>Work in progress...</p>
+        <h2>Nýjustu færslur</h2>
+        <ul>
+        {% for post in posts %}
+        <li>
+            {% if post.first_image %}
+              <img src="{{ post.first_image.image_path | thumbnail('150x100', crop=True) }}" alt="" align="right" />
+            {% endif %}
+            <h3>{{ post.title |safe }}</h3>
+            <div><small>{{ post.published }} | {{ post.post_type.name_is }}</small></div>
+            <p>
+              {{ post.summary | safe }}
+            </p>
+        </li>
+        {% endfor %}
+        </ul>
     </div>
 </div>
 {% endblock %}
