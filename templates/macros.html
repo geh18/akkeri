@@ -1,0 +1,22 @@
+{% macro teaser(post, thumb_size='120x120', thumb_crop=True,
+                css_class='teaser', with_date=True, heading_level=3) %}
+  {% set img = post.first_image %}
+  <div class="{{ css_class }}">
+    <h{{ heading_level }}>
+      <a href="{{ post.get_url() }}">{{ post.title | safe }}</a>
+    </h{{ heading_level }}>
+    <div class="summary clearfix {% if img %}with-img{% else %}without-img{% endif %}">
+      {% if img %}
+        <img src="{{ img.image_path | thumbnail(thumb_size, crop=thumb_crop) }}" alt="{{ img.title }}" />
+      {% endif %}
+      {% if with_date %}
+        <div class="dateline"><small>
+            {{ post.published }}
+            | {{ post.post_type.name_is }}
+            | {{ post.images | count }} mynd{% if post.images | count != 1 %}ir{% endif %}
+        </small></div>
+      {% endif %}
+      {{ post.summary | safe }}
+    </div>
+  </div>
+{% endmacro %}
