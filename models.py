@@ -162,6 +162,11 @@ class PostType(db.Model):
 class Post(db.Model):
     __tablename__ = 'posts'
 
+    # Class constants, used in controllers and in the get_url method
+    POST_TYPE_IDS = (1, 2, 3, 4)
+    PAGE_TYPE_ID = 5
+    PROFILE_TYPE_ID = 6
+
     id = Column(Integer, primary_key=True, server_default=text(
         "nextval('posts_id_seq'::regclass)"))
     author_id = Column(
@@ -202,6 +207,15 @@ class Post(db.Model):
     @property
     def first_image(self):
         return self.images[0] if self.images else None
+
+    def get_url(self):
+        if self.post_type_id == self.PAGE_TYPE_ID:
+            prefix = 'page'
+        elif self.post_type_id == self.PROFILE_TYPE_ID:
+            prefix = 'profile'
+        else:
+            prefix = 'post'
+        return '/%s/%s/' % (prefix, self.slug)
 
 
 class Role(db.Model):
