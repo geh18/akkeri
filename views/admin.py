@@ -3,12 +3,16 @@ from flask import url_for, redirect, request
 from flask_admin.contrib.sqla import ModelView
 import flask_login
 import bcrypt
+import sys
 from forms import LoginForm
 from config import STATIC_IMAGES
 
+# Used for admin model view class discovery
+current_module = sys.modules[__name__]
+
 
 class AkkeriAdminIndexView(AdminIndexView):
-	# AdminIndexView: Default view for /admin/ url
+    # AdminIndexView: Default view for /admin/ url
     @expose('/')
     def index(self):
         if not flask_login.current_user.is_authenticated:
@@ -43,16 +47,29 @@ class AdminModelView(ModelView):
     def inaccessible_callback(self, name, **kwargs):
         return redirect(url_for('login', next=request.url))
 
-class ImageModelView(ModelView):
-	# form_edit_rules = ('title', 'image_path', 'caption')
-	# form_create_rules = form_edit_rules
-	column_list = ('title', 'image_path', 'caption')
-	# raise Exception(STATIC_IMAGES)
-	form_extra_fields = {
-		'image_path': form.ImageUploadField('Image',
-                                            url_relative_path='images/',
-											thumbnail_size=(100, 100, True))
-	}
+
+class AttachmentModelView(AdminModelView):
+    column_list = (
+            'attachment_path', 'title', 'owner', 'added')
+
+
+class ImageModelView(AdminModelView):
+    # form_edit_rules = ('title', 'image_path', 'caption')
+    # form_create_rules = form_edit_rules
+    column_list = ('title', 'image_path', 'caption')
+    # raise Exception(STATIC_IMAGES)
+    form_extra_fields = {
+        'image_path': form.ImageUploadField(
+            'Image',
+            url_relative_path='images/',
+            thumbnail_size=(100, 100, True)),
+    }
+
+
+class PostModelView(AdminModelView):
+    column_list = (
+            'title', 'slug', 'post_type', 'created', 'published')
+
 
 
 class UserModelView(AdminModelView):
@@ -60,8 +77,10 @@ class UserModelView(AdminModelView):
     Special settings for user class.
     """
     form_edit_rules = (
-            'username', 'email', 'fullname', 'active', 'is_superuser')
-    column_list = ('username', 'email', 'fullname', 'created')
+            'username', 'email', 'fullname', 'user_location', 'active',
+            'show_profile', 'is_superuser')
+    column_list = (
+            'username', 'email', 'fullname', 'is_superuser', 'created')
 
     def create_model(self, form):
         pw = form.password.data
@@ -82,10 +101,8 @@ def setup_admin(app, db, login_manager):
         if attr[0]=='X' or not attr[0].isupper():
             continue
         model = getattr(models, attr)
-        if attr == 'User':
-            admin.add_view(UserModelView(model, db.session))
-        elif attr == 'Image':
-			admin.add_view(ImageModelView(model, db.session))
-        elif model.__bases__ and db.Model in model.__bases__:
-            admin.add_view(AdminModelView(model, db.session))
+        model_view_class = getattr(
+                current_module, attr + 'ModelView', AdminModelView)
+        if model.__bases__ and db.Model in model.__bases__:
+            admin.add_view(model_view_class(model, db.session))
     return admin
