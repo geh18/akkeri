@@ -156,7 +156,7 @@ class PostType(db.Model):
     name_en = Column(String)
 
     def __unicode__(self):
-        return u'%s - %s' % (self.label, self.name_en)
+        return u'%s' % self.label
 
 
 class Post(db.Model):
