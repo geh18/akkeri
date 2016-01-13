@@ -1,3 +1,110 @@
+$body-color: #0e1721;
+$article-bk-color: #ffffff;
+$read-more-color: #0e1721;
+$gold-color: #d0b852;
+/* We define a variable in case we want a different shade of white*/
+$white-color: #ffffff;
+$cont-width: 1180px;
+
+
+body {
+    background-color: $body-color;
+    font-size: 14pxi;
+}
+
 p {
-  font-size: 14px;
-} 
+  font-size: 1.2em;
+}
+
+i {
+    color: $gold-color;
+}
+
+/* Dedicated for the depth perception of some part of page*/
+.shrinkin {
+    width: 92%;
+    margin: 0 auto;
+    background-color: $body-color;
+}
+
+.container {
+    padding: 0px;   
+    background-color: $body-color;
+    
+    @media (min-width: 1200px) {
+        width: 1180px;
+    }
+}
+
+.article-list {
+    width: 100%;
+    margin-top: -20px;
+    background-color: $white-color;
+    border-radius: 4px;
+}
+
+.cover-news {
+    position: relative;
+    .image {
+        width: 100%;
+    }
+    .info {
+        position: absolute;
+        bottom: 0px;
+        color: #fff;
+        text-align: center;
+        padding: 9em;
+        padding-bottom: 7.5em;
+        background: -moz-linear-gradient(top, rgba(255,255,255,0) 0%,
+        rgba(26,39,55,1) 46%, rgba(24,37,53,1) 100%);
+        background: -webkit-linear-gradient(top, rgba(255,255,255,0)
+        0%,rgba(26,39,55,1) 46%,rgba(24,37,53,1) 100%);
+        background: linear-gradient(to bottom, rgba(255,255,255,0)
+        0%,rgba(26,39,55,1) 46%,rgba(24,37,53,1) 100%);
+        filter: progid:DXImageTransform.Microsoft.gradient(
+        startColorstr='#00ffffff', endColorstr='#182535',GradientType=0 );
+    }
+    .more {
+        width: 139px;
+        height: 50px;
+        background-color: $read-more-color;
+        color: $gold-color;
+        font-size: 18px;
+        padding: 13px;
+        border-radius: 4px;
+    }
+    .title {
+        margin-bottom: 25px;
+    }
+    .teaser {
+        margin-bottom: 40px;
+    }
+    .meta {
+        span {
+            margin-left: 10px;
+            &:first-child {
+                margin-left: 0px;
+            }
+            i.fa {
+                margin-right: 10px;
+            }
+        }
+    }
+}
+
+.nav-bar {
+    position: absolute;
+    z-index: 10;
+    .logo {
+        color: #000;
+        background-color: #FFF;
+        font-size: 30px;
+        font-weight: bold;
+        border-radius: 50%;
+        height: 100px;
+        width: 100px;
+        text-align: center;
+        line-height: 100px;
+    }
+}
+
