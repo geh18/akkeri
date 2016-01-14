@@ -7,7 +7,7 @@ import bcrypt
 from PIL import Image
 
 from flask_admin import Admin, AdminIndexView, helpers, expose, form
-from flask import url_for, redirect, request, current_app
+from flask import url_for, redirect, request, current_app, abort
 from flask_admin.contrib.sqla import ModelView
 import flask_login
 
@@ -63,11 +63,78 @@ class AdminModelView(ModelView):
     """
     Base class for password-protected model views.
     """
+
+    # Sets of access labels from the `roles` table with which some of the
+    # assigned roles for each user must intersect. Of course, superusers have
+    # access to everything regardless of these role labels. The list of
+    # relevant labels is different for many ModelView subclasses.
+
+    FULL_ACCESS_ROLES = set(['group_editor'])
+    PARTIAL_ACCESS_ROLES = set([
+        'group_refugee', 'group_volunteer', 'group_oped'])
+
+    # The column containing the user_id relevant for access control. Set this
+    # to None if the corresponding model has no relevant column holding a
+    # user_id. In such cases you may need to override get_query(),
+    # get_count_query() and get_one().
+
+    USER_ID_COLUMN = 'author_id'
+
     def is_accessible(self):
         return flask_login.current_user.is_authenticated
 
     def inaccessible_callback(self, name, **kwargs):
         return redirect(url_for('login', next=request.url))
+
+    def _access_check(self, full_check=False):
+        user = flask_login.current_user
+        if user.is_superuser:
+            return True
+        check_against = \
+            self.FULL_ACCESS_ROLES if full_check else self.PARTIAL_ACCESS_ROLES
+        labels = set([_.label for _ in user.roles])
+        return True if check_against & labels else False
+
+    @property
+    def with_full_access(self):
+        return self._access_check(full_check=True)
+
+    @property
+    def with_partial_access(self):
+        return self._access_check(full_check=False)
+
+    def _apply_partial_filter(self, query):
+        if self.with_full_access:
+            return query
+        elif self.with_partial_access:
+            ucol = self.USER_ID_COLUMN
+            if ucol is None:
+                return query
+            filter = {ucol: flask_login.current_user.id}
+            return query.filter_by(**filter)
+        else:
+            return abort(403)
+
+    def get_one(self, id):
+        obj = super(AdminModelView, self).get_one(id)
+        if self.with_full_access:
+            return obj
+        elif self.with_partial_access:
+            ucol = self.USER_ID_COLUMN
+            if ucol is None:
+                return obj
+            uid = flask_login.current_user.id
+            if getattr(obj, self.USER_ID_COLUMN, None) == uid:
+                return obj
+        return abort(403)
+
+    def get_query(self):
+        query = super(AdminModelView, self).get_query()
+        return self._apply_partial_filter(query)
+
+    def get_count_query(self):
+        query = super(AdminModelView, self).get_count_query()
+        return self._apply_partial_filter(query)
 
 
 class UniqueUploadMixin(object):
@@ -116,6 +183,11 @@ class AttachmentUploadField(form.FileUploadField, UniqueUploadMixin):
 
 
 class AttachmentModelView(AdminModelView):
+    FULL_ACCESS_ROLES = set(['group_editor', 'all_attachments'])
+    PARTIAL_ACCESS_ROLES = set([
+        'group_refugee', 'group_volunteer', 'group_oped', 'own_attchments'])
+    USER_ID_COLUMN = 'owner_id'
+
     column_list = (
             'attachment_path', 'title', 'owner', 'added')
     form_excluded_columns = ('bytes', 'posts', )
@@ -159,6 +231,10 @@ class AkkeriImageUploadField(form.ImageUploadField, UniqueUploadMixin):
 
 
 class ImageModelView(AdminModelView):
+    FULL_ACCESS_ROLES = set(['group_editor', 'all_images'])
+    PARTIAL_ACCESS_ROLES = set([
+        'group_refugee', 'group_volunteer', 'group_oped', 'own_images'])
+    USER_ID_COLUMN = 'owner_id'
     column_list = ('title', 'image_path')
     form_overrides = {
         'image_path': AkkeriImageUploadField,
@@ -178,14 +254,51 @@ class ImageModelView(AdminModelView):
 
 
 class PostModelView(AdminModelView):
+    FULL_ACCESS_ROLES = set(['group_editor', 'all_posts'])
+    PARTIAL_ACCESS_ROLES = set([
+        'group_refugee', 'group_volunteer', 'group_oped', 'own_posts'])
+    USER_ID_COLUMN = 'author_id'
     column_list = (
             'title', 'slug', 'post_type', 'created', 'published')
 
 
-class UserModelView(AdminModelView):
+class HiddenWithoutFullAccessModelView(AdminModelView):
+    """
+    Inherit from this in order to hide the menu item without making it
+    impossible for the ordinary logged-in user to access the page.
+    """
+
+    USER_ID_COLUMN = None
+
+    def is_visible(self):
+        return self.with_full_access
+
+
+class OnlyForFullAccessModelView(HiddenWithoutFullAccessModelView):
+    """
+    Inherit from this in order to limit access to superusers and editors.
+    """
+    def is_accessible(self):
+        return flask_login.current_user.is_authenticated \
+            and self.with_full_access
+
+    def inaccessible_callback(self, name, **kwargs):
+        if flask_login.current_user.is_authenticated:
+            # Logged in, but without full rights: Forbidden
+            return abort(403)
+        # Not logged in: Redirect to login page.
+        return redirect(url_for('login', next=request.url))
+
+
+class UserModelView(OnlyForFullAccessModelView):
     """
     Special settings for user class.
     """
+    FULL_ACCESS_ROLES = set(['group_editor', 'all_users'])
+    PARTIAL_ACCESS_ROLES = set([
+        'group_refugee', 'group_volunteer', 'group_oped'])
+    USER_ID_COLUMN = 'id'
+
     form_edit_rules = (
             'username', 'email', 'fullname', 'user_location', 'active',
             'show_profile', 'is_superuser')
@@ -198,6 +311,26 @@ class UserModelView(AdminModelView):
             pw = pw.encode('utf-8')
         form.password.data = bcrypt.hashpw(pw, bcrypt.gensalt())
         super(UserModelView, self).create_model(form)
+
+
+class TagModelView(AdminModelView):
+    USER_ID_COLUMN = None
+
+
+class RoleModelView(OnlyForFullAccessModelView):
+    pass
+
+
+class PostTypeModelView(OnlyForFullAccessModelView):
+    pass
+
+
+class LanguageModelView(OnlyForFullAccessModelView):
+    pass
+
+
+class FeaturedModelView(OnlyForFullAccessModelView):
+    pass
 
 
 def setup_admin(app, db, login_manager):
