@@ -23,4 +23,5 @@ build/
 static/images/
 static/css/
 static/cache/
+static/attachments/
 .sass-cache/
