@@ -1,10 +1,15 @@
 # coding: utf-8
 import bcrypt
+import datetime
+import os
+import PIL
 from sqlalchemy import (
     Boolean, Column, DateTime, ForeignKey, Integer, String, Text,
-    UniqueConstraint, text, desc)
+    UniqueConstraint, text, desc, type_coerce)
+from sqlalchemy.event import listens_for
 from sqlalchemy.orm import relationship
 from app import db
+from flask import current_app
 
 
 # NOTE:
@@ -69,8 +74,11 @@ class Attachment(db.Model):
     active = Column(Boolean, nullable=False, server_default=text("true"))
     available_to_others = Column(
         Boolean, nullable=False, server_default=text("false"))
-    added = Column(DateTime, index=True, server_default=text("now()"))
-    changed = Column(DateTime, server_default=text("now()"))
+    added = Column(DateTime, index=True, server_default=text("now()"),
+                   default=datetime.datetime.now)
+    changed = Column(DateTime, server_default=text("now()"),
+                     default=datetime.datetime.now,
+                     onupdate=datetime.datetime.now)
 
     owner = relationship(u'User')
     image = relationship(u'Image')
@@ -80,6 +88,27 @@ class Attachment(db.Model):
 
     def __unicode__(self):
         return self.attachment_path
+
+    def get_full_attachment_path(self):
+        try:
+            base_dir = current_app.static_folder
+            subdir = current_app.config.get(
+                'ATTACHMENTS_SUBDIR', 'attachments')
+        except RuntimeError:
+            base_dir = os.path.join(
+                os.path.dirname(os.path.realpath(__file__)), 'static')
+            subdir = 'attachments'
+        base_dir = os.path.join(base_dir, subdir)
+        return os.path.join(base_dir, self.attachment_path)
+
+
+@listens_for(Attachment, 'before_insert')
+def attachment_before_insert(mapper, connection, instance):
+    filename = instance.get_full_attachment_path()
+    if os.path.isfile(filename):
+        instance.bytes = os.path.getsize(filename)
+    else:
+        instance.bytes = 0
 
 
 class Featured(db.Model):
@@ -99,7 +128,8 @@ class Featured(db.Model):
         Boolean, nullable=False, server_default=text("true"))
     added_by = Column(ForeignKey(
         u'users.id', ondelete=u'CASCADE', onupdate=u'CASCADE'))
-    added_at = Column(DateTime, nullable=False, server_default=text("now()"))
+    added_at = Column(DateTime, nullable=False, server_default=text("now()"),
+                      default=datetime.datetime.now)
 
     user = relationship(u'User')
     post = relationship(u'Post')
@@ -124,8 +154,11 @@ class Image(db.Model):
     active = Column(Boolean, nullable=False, server_default=text("true"))
     available_to_others = Column(
         Boolean, nullable=False, server_default=text("false"))
-    added = Column(DateTime, index=True, server_default=text("now()"))
-    changed = Column(DateTime, server_default=text("now()"))
+    added = Column(DateTime, index=True, server_default=text("now()"),
+                   default=datetime.datetime.now)
+    changed = Column(DateTime, server_default=text("now()"),
+                     default=datetime.datetime.now,
+                     onupdate=datetime.datetime.now)
 
     owner = relationship(u'User')
     posts = relationship('XPostImage', back_populates='image')
@@ -133,6 +166,30 @@ class Image(db.Model):
 
     def __unicode__(self):
         return self.image_path
+
+    def get_full_image_path(self):
+        try:
+            base_dir = current_app.static_folder
+            subdir = current_app.config.get('IMAGES_SUBDIR', 'images')
+        except RuntimeError:
+            base_dir = os.path.join(
+                os.path.dirname(os.path.realpath(__file__)), 'static')
+            subdir = 'images'
+        base_dir = os.path.join(base_dir, subdir)
+        return os.path.join(base_dir, (self.image_path or ''))
+
+
+@listens_for(Image, 'before_insert')
+def image_before_insert(mapper, connection, target):
+    filename = target.get_full_image_path()
+    if os.path.isfile(filename):
+        target.bytes = os.path.getsize(filename)
+        with PIL.Image.open(filename) as im:
+            target.width, target.height = im.size
+    else:
+        target.bytes = 0
+        target.width = 0
+        target.height = 0
 
 
 class Language(db.Model):
@@ -186,8 +243,11 @@ class Post(db.Model):
         u'post_types.id', ondelete=u'SET NULL', onupdate=u'CASCADE'))
     language_id = Column(ForeignKey(
         u'languages.id', ondelete=u'SET NULL', onupdate=u'CASCADE'))
-    created = Column(DateTime, index=True, server_default=text("now()"))
-    changed = Column(DateTime, server_default=text("now()"))
+    created = Column(DateTime, index=True, server_default=text("now()"),
+                     default=datetime.datetime.now)
+    changed = Column(DateTime, server_default=text("now()"),
+                     default=datetime.datetime.now,
+                     onupdate=datetime.datetime.now)
     published = Column(DateTime, index=True)
 
     author = relationship(u'User', primaryjoin='Post.author_id == User.id')
@@ -196,9 +256,10 @@ class Post(db.Model):
         u'User', primaryjoin='Post.last_changed_by == User.id')
     post_type = relationship(u'PostType')
     images = relationship('XPostImage', back_populates='post',
-            order_by=lambda: XPostImage.image_order)
-    attachments = relationship('XPostAttachment', back_populates='post',
-            order_by=lambda: XPostAttachment.attachment_order)
+                          order_by=lambda: XPostImage.image_order)
+    attachments = relationship(
+        'XPostAttachment', back_populates='post',
+        order_by=lambda: XPostAttachment.attachment_order)
     tags = relationship('Tag', secondary=x_post_tag, back_populates='posts')
 
     def __unicode__(self):
@@ -244,7 +305,8 @@ class Tag(db.Model):
     for_attachments = Column(Boolean, nullable=False,
                              server_default=text("true"))
     for_posts = Column(Boolean, nullable=False, server_default=text("true"))
-    created = Column(DateTime, server_default=text("now()"))
+    created = Column(DateTime, server_default=text("now()"),
+                     default=datetime.datetime.now)
 
     posts = relationship('Post', secondary=x_post_tag, back_populates='tags')
     images = relationship('Image', secondary=x_image_tag,
@@ -271,8 +333,11 @@ class User(db.Model):
                           server_default=text("false"))
     is_superuser = Column(Boolean, nullable=False,
                           server_default=text("false"))
-    created = Column(DateTime, server_default=text("now()"))
-    changed = Column(DateTime, server_default=text("now()"))
+    created = Column(DateTime, server_default=text("now()"),
+                     default=datetime.datetime.now)
+    changed = Column(DateTime, server_default=text("now()"),
+                     default=datetime.datetime.now,
+                     onupdate=datetime.datetime.now)
 
     roles = relationship('Role', secondary=x_user_role, back_populates='users')
 
@@ -331,7 +396,8 @@ class XPostAttachment(db.Model):
                               server_default=text("1"))
     custom_title = Column(String)
     custom_caption = Column(Text)
-    linked_at = Column(DateTime, server_default=text("now()"))
+    linked_at = Column(DateTime, server_default=text("now()"),
+                       default=datetime.datetime.now)
 
     attachment = relationship(u'Attachment', back_populates='posts')
     post = relationship(u'Post', back_populates='attachments')
@@ -354,7 +420,8 @@ class XPostImage(db.Model):
     image_order = Column(Integer, nullable=False, server_default=text("1"))
     custom_title = Column(String)
     custom_caption = Column(Text)
-    linked_at = Column(DateTime, server_default=text("now()"))
+    linked_at = Column(DateTime, server_default=text("now()"),
+                       default=datetime.datetime.now)
 
     image = relationship(u'Image', back_populates='posts')
     post = relationship(u'Post', back_populates='images')
