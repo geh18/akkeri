@@ -157,7 +157,7 @@ class UniqueUploadMixin(object):
                 raise ValueError('Image "%s" already exists' % filename)
             else:
                 try_add += 1
-                base, ext = os.path.splitext(path)
+                base, ext = os.path.splitext(orig_path)
                 path = '%s--%d%s' % (base, try_add, ext)
         if try_add:
             base, ext = os.path.splitext(filename)
