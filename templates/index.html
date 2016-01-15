@@ -1,54 +1,17 @@
 {% extends "base.html" %}
-{% from "macros.html" import teaser %}
+{% import "macros.html" as fp %}
 
 {% block content %}
 <div class="container">
        
-    {{ page_header() }}
+    {{ fp.page_header() }}
 
-    {{ cover_news() }}
+    {{ fp.cover_news() }}
     
     <div class="article-list">
-        {{ article_list() }}
+        {{ fp.article_list(posts) }}
     </div>
 </div>
 {% endblock %}
 
-{% macro cover_news(news=None) %}
-    <div class="cover-news shrinkin">
-        <img src="/static/cache/tn/2015/11/12242089_10154509916183438_1006218838_n_720x540_1_80.jpg" class="image">
-        <div class="info">
-            <div class="meta">
-                <span class="type"><i class="fa fa-newspaper-o"></i>Saga</span>
-                <span class="author"><i class="fa fa-user"></i>Gezim Haziri</span>
-                <span class="location"><i class="fa fa-map-marker"></i>Reykjavík</span>
-                <span class="date"><i class="fa fa-calendar"></i>11. Janúar</span>
-            </div>
-            <h1 class="title">Fyrirsögnin</h1>
-            <p class="teaser">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec
-            velit sem, pretium non enim ac, posuere pretium orci. Donec aliquam
-            risus quis blandit tempor. Duis aliquam, diam eu sollicitudin posuere,
-            elit erat finibus risus.</p>
-            <a href="#" class="more">Lesa meira</a>
-        </div>
-    </div>
-{% endmacro %}
 
-{% macro page_header() %}
-    <div class="nav-bar">
-        <div class="logo">Akkeri</div>
-    </div>
-{% endmacro %}
-
-{% macro article_list() %}
-    <div>
-        <h2>Nýjustu færslur</h2>
-        <ul>
-        {% for post in posts %}
-        <li>
-            {{ teaser(post) }}
-        </li>
-        {% endfor %}
-        </ul>
-    </div>
-{% endmacro%}

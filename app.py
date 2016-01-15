@@ -1,5 +1,4 @@
 # encoding=utf-8
-
 import os
 from flask import Flask, render_template
 from flask.ext.script import Manager
@@ -18,6 +17,7 @@ db = SQLAlchemy(app)
 thumb = Thumbnail(app)
 
 import models
+import filters
 
 login_manager = LoginManager()
 login_manager.init_app(app)

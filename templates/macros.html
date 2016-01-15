@@ -20,3 +20,75 @@
     </div>
   </div>
 {% endmacro %}
+
+
+{% macro article_item_1(post, thumb_size='120x120', thumb_crop=True,
+                css_class='teaser', with_date=True, heading_level=3) %}
+  
+  {% set img = post.first_image %}
+
+    <div class="col-md-6 article-item-1">
+        <img src="/static/images/2016/01/14/portrait_thumb.jpg" class="author_image">
+        <div class"meta">
+            <span class="type">{{ post.post_type.name_is }}</span>
+            <span class="author">Nafn. N. Nafnsson</span>
+            <span class="date">{{ post.published }}</span>
+        </div>
+        <h2 class="title">{{ post.title | safe }}</h2>
+        <p class="teaser">{{ post.summary | safe }}</p>
+    </div>
+{% endmacro %}
+
+
+{% macro article_item_2(post, thumb_size='120x120', thumb_crop=True,
+                css_class='teaser', with_date=True, heading_level=3) %}
+
+    <div class="col-md-12 article-item-2">
+    
+    </div>
+
+{% endmacro %}
+
+
+{% macro article_item_3(post, thumb_size='120x120', thumb_crop=True,
+                css_class='teaser', with_date=True, heading_level=3) %}
+
+{% endmacro %}
+
+{% macro article_item_default(post=None) %}
+
+{% endmacro %}
+
+{% macro cover_news(news=None) %}
+    <div class="cover-news shrinkin">
+        <img src="/static/cache/tn/2015/11/12242089_10154509916183438_1006218838_n_720x540_1_80.jpg" class="image">        <div class="info">
+            <div class="meta">
+                <span class="type"><i class="fa fa-newspaper-o"></i>Saga</span>
+                <span class="author"><i class="fa fa-user"></i>Gezim Haziri</span>
+                <span class="location"><i class="fa fa-map-marker"></i>Reykjavík</span>
+                <span class="date"><i class="fa fa-calendar"></i>11. Janúar</span>
+            </div>
+            <h1 class="title">Fyrirsögnin</h1>
+            <p class="teaser">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec
+            velit sem, pretium non enim ac, posuere pretium orci. Donec aliquam
+            risus quis blandit tempor. Duis aliquam, diam eu sollicitudin posuere,
+            elit erat finibus risus.</p>
+            <a href="#" class="more">Lesa meira</a>
+        </div>
+    </div>
+{% endmacro %}
+
+{% macro page_header() %}
+    <div class="nav-bar">
+        <div class="logo">Akkeri</div>
+    </div>
+{% endmacro %}
+
+
+{% macro article_list(posts) %}
+    {% for post in posts %}
+        <div class="{{ 'row' if loop.index0 % 2 else '' }} {{ 'clear' if loop.index % 2 else '' }}">
+        {{ loop.index0 | article_display | getattr(post) }}
+        </div>
+    {% endfor %}
+{% endmacro%}

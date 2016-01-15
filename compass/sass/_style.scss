@@ -20,6 +20,10 @@ i {
     color: $gold-color;
 }
 
+.clear {
+    clear: both;
+}
+
 /* Dedicated for the depth perception of some part of page*/
 .shrinkin {
     width: 92%;
@@ -38,9 +42,9 @@ i {
 
 .article-list {
     width: 100%;
-    margin-top: -20px;
     background-color: $white-color;
     border-radius: 4px;
+    overflow: hidden;
 }
 
 .cover-news {
