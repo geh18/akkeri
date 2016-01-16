@@ -43,8 +43,24 @@
 {% macro article_item_2(post, thumb_size='120x120', thumb_crop=True,
                 css_class='teaser', with_date=True, heading_level=3) %}
 
-    <div class="col-md-12 article-item-2">
-    
+    <div class="row article-item-2">
+        <div class="col-md-6">
+          {% set img = post.first_image %}
+          {% if img %}
+          <img src="{{ img.image_path| thumbnail('590x315', crop=True) }}"
+          class="article_image">
+          {% endif %}
+        </div>
+        
+        <div class="col-md-6">
+            <div class"meta">
+                <span class="type">{{ post.post_type.name_is }}</span>
+                <span class="author">{{ post.author.fullname }}</span>
+                <span class="date">{{ post.published }}</span>
+            </div>
+            <h2 class="title">{{ post.title | safe }}</h2>
+            <p class="teaser">{{ post.summary | safe }}</p>
+        </div>
     </div>
 
 {% endmacro %}
@@ -78,6 +94,7 @@
     </div>
 {% endmacro %}
 
+
 {% macro page_header() %}
     <div class="nav-bar">
         <div class="logo">Akkeri</div>
@@ -87,8 +104,8 @@
 
 {% macro article_list(posts) %}
     {% for post in posts %}
-        <div class="{{ 'row' if loop.index0 % 2 else '' }} {{ 'clear' if loop.index % 2 else '' }}">
-        {{ loop.index0 | article_display | getattr(post) }}
-        </div>
+        {% set display = loop.index0 | article_display %}
+       
+        {{ display | getattr(post) }}
     {% endfor %}
 {% endmacro%}

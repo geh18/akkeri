@@ -18,4 +18,4 @@ def article_display(index):
     displays = {0: 'cover_news', 1: 'article_item_1', 2:
     'article_item_2', 3: 'article_item_3'}
     
-    return displays.get(i, 'article_item_default')
+    return displays.get(i, 'article_item_2')

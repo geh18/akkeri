@@ -4,6 +4,8 @@ $read-more-color: #0e1721;
 $gold-color: #d0b852;
 /* We define a variable in case we want a different shade of white*/
 $white-color: #ffffff;
+$light-gray: #e2e2e2;
+
 $cont-width: 1180px;
 
 
@@ -112,3 +114,13 @@ i {
     }
 }
 
+.article-item-1 {
+    border: 1px solid $light-gray;
+    border-right: 0px;
+    padding: 0px;
+    height: 321px;
+}
+
+.article-item-2 {
+    clear: both;
+}
