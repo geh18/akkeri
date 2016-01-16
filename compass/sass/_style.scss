@@ -1,5 +1,6 @@
 $body-color: #0e1721;
-$article-bk-color: #ffffff;
+$akkeri-blue: #192636;
+$article-bg-color: #ffffff;
 $read-more-color: #0e1721;
 $gold-color: #d0b852;
 /* We define a variable in case we want a different shade of white*/
@@ -123,4 +124,11 @@ i {
 
 .article-item-2 {
     clear: both;
+}
+
+.footer {
+    background-color: $akkeri-blue;
+    .content {
+        padding: 300px;
+    }
 }
