@@ -80,6 +80,42 @@ class AdminModelView(ModelView):
 
     USER_ID_COLUMN = 'author_id'
 
+    ## Distinct form_columns for full access vs partial access.
+    ## Default is to give both types of users access to all columns.
+
+    FULL_ACCESS_COLUMNS = None
+    PARTIAL_ACCESS_COLUMNS = None
+
+    def _create_or_edit_form(self, formtype, obj=None):
+        if formtype == 'create':
+            key_prefix = 'cr'
+            form_meth = getattr(super(AdminModelView, self), 'create_form')
+        elif formtype == 'edit':
+            key_prefix = 'ed'
+            form_meth = getattr(super(AdminModelView, self), 'edit_form')
+        else:
+            raise RuntimeError('Bad formtype: ' + formtype)
+        if self.FULL_ACCESS_COLUMNS == self.PARTIAL_ACCESS_COLUMNS:
+            # The question is moot, since both kinds of users have equal access
+            return form_meth(obj)
+        if self.with_full_access:
+            self.form_columns = self.FULL_ACCESS_COLUMNS
+            self._refresh_forms_cache()
+            form = form_meth(obj)
+            return form
+        else:
+            self.form_columns = self.PARTIAL_ACCESS_COLUMNS
+            self._refresh_forms_cache()
+            form = form_meth(obj)
+            return form
+
+
+    def create_form(self, obj=None):
+        return self._create_or_edit_form('create', obj)
+
+    def edit_form(self, obj=None):
+        return self._create_or_edit_form('edit', obj)
+
     def is_accessible(self):
         return flask_login.current_user.is_authenticated
 
@@ -88,6 +124,9 @@ class AdminModelView(ModelView):
 
     def _access_check(self, full_check=False):
         user = flask_login.current_user
+        if not hasattr(user, 'is_superuser'):
+            # Initialization, or user not logged in
+            return False
         if user.is_superuser:
             return True
         check_against = \
@@ -257,10 +296,12 @@ class PostModelView(AdminModelView):
     FULL_ACCESS_ROLES = set(['group_editor', 'all_posts'])
     PARTIAL_ACCESS_ROLES = set([
         'group_refugee', 'group_volunteer', 'group_oped', 'own_posts'])
+    PARTIAL_ACCESS_COLUMNS = (
+        'title', 'is_draft', 'summary', 'body', 'published',
+        'images', 'attachments', 'tags')
     USER_ID_COLUMN = 'author_id'
     column_list = (
             'title', 'slug', 'post_type', 'created', 'published')
-
 
 class HiddenWithoutFullAccessModelView(AdminModelView):
     """
@@ -315,6 +356,7 @@ class UserModelView(OnlyForFullAccessModelView):
 
 class TagModelView(AdminModelView):
     USER_ID_COLUMN = None
+    PARTIAL_ACCESS_COLUMNS = ('name', 'posts', 'images', 'attachments')
 
 
 class RoleModelView(OnlyForFullAccessModelView):
