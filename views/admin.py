@@ -6,6 +6,8 @@ import sys
 import bcrypt
 from PIL import Image
 
+from wtforms import TextAreaField
+from wtforms.widgets import TextArea
 from flask_admin import Admin, AdminIndexView, helpers, expose, form
 from flask import url_for, redirect, request, current_app, abort
 from flask_admin.contrib.sqla import ModelView
@@ -292,6 +294,19 @@ class ImageModelView(AdminModelView):
     }
 
 
+class TMCETextAreaWidget(TextArea):
+    def __call__(self, field, **kwargs):
+        if kwargs.get('class'):
+            kwargs['class'] += ' tinymce-editor'
+        else:
+            kwargs.setdefault('class', 'ckeditor')
+        return super(TMCETextAreaWidget, self).__call__(field, **kwargs)
+
+
+class TMCETextAreaField(TextAreaField):
+    widget = TMCETextAreaWidget()
+
+
 class PostModelView(AdminModelView):
     FULL_ACCESS_ROLES = set(['group_editor', 'all_posts'])
     PARTIAL_ACCESS_ROLES = set([
@@ -300,8 +315,17 @@ class PostModelView(AdminModelView):
         'title', 'is_draft', 'summary', 'body', 'published',
         'images', 'attachments', 'tags')
     USER_ID_COLUMN = 'author_id'
-    column_list = (
-            'title', 'slug', 'post_type', 'created', 'published')
+    form_excluded_columns = ('created', 'changed')
+    form_overrides = {
+        'body': TMCETextAreaField,
+    }
+    from models import XPostImage, XPostAttachment
+    inline_models = (
+        (XPostImage, {'form_excluded_columns': ['linked_at']}),
+        (XPostAttachment, {'form_excluded_columns': ['linked_at']}), )
+    create_template = 'admin/model/tmce_editor.html'
+    edit_template = create_template
+
 
 class HiddenWithoutFullAccessModelView(AdminModelView):
     """
