@@ -299,7 +299,7 @@ class TMCETextAreaWidget(TextArea):
         if kwargs.get('class'):
             kwargs['class'] += ' tinymce-editor'
         else:
-            kwargs.setdefault('class', 'ckeditor')
+            kwargs.setdefault('class', 'tinymce-editor')
         return super(TMCETextAreaWidget, self).__call__(field, **kwargs)
 
 
