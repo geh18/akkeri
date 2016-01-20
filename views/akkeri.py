@@ -10,7 +10,7 @@ def index():
 
     index = next((i for i, post in enumerate(posts)
                  if post.post_display and
-                 post.post_display[0].display == u'cover_post'), 0)
+                 post.post_display.label == u'cover_post'), 0)
 
     cover_post = posts.pop(index)
 

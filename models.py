@@ -220,12 +220,8 @@ class PostDisplay(db.Model):
     __tablename__ = 'post_display'
 
     id = Column(Integer, primary_key=True)
-    post_id = Column(ForeignKey(u'posts.id', ondelete=u'CASCADE',
-                                onupdate=u'CASCADE'), nullable=False)
-    display = Column(String)
-
-    post = relationship(u'Post', back_populates=u'post_display',
-                        foreign_keys=[post_id])
+    label = Column(String, nullable=False, unique=True)
+    description = Column(String)
 
     def __unicode__(self):
         return u'%s' % self.display
@@ -264,13 +260,16 @@ class Post(db.Model):
                      default=datetime.datetime.now,
                      onupdate=datetime.datetime.now)
     published = Column(DateTime, index=True)
+    post_display_id = Column(
+        ForeignKey(u'post_display.id', ondelete='SET NULL',
+        onupdate=u'CASCADE'), nullable=True)
+
     author = relationship(u'User', primaryjoin='Post.author_id == User.id')
     language = relationship(u'Language')
     last_changed_by_user = relationship(
         u'User', primaryjoin='Post.last_changed_by == User.id')
-
     post_type = relationship(u'PostType')
-    post_display = relationship(u'PostDisplay', back_populates=u'post')
+    post_display = relationship(u'PostDisplay')
     images = relationship('XPostImage', back_populates='post',
                           order_by=lambda: XPostImage.image_order)
     attachments = relationship(

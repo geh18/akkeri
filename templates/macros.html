@@ -116,7 +116,7 @@
     <div class="article-list">
     {% for post in posts %}
 		{% if post.post_display %}
-			{% set display = post.post_display[0].display %}
+			{% set display = post.post_display.label %}
 			{% if display== 'cover_post' %}
 				</div>
 				{{ cover_post(post) }}
