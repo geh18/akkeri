@@ -5,7 +5,7 @@ import os
 import PIL
 from sqlalchemy import (
     Boolean, Column, DateTime, ForeignKey, Integer, String, Text,
-    UniqueConstraint, text, desc, type_coerce)
+    text)
 from sqlalchemy.event import listens_for
 from sqlalchemy.orm import relationship
 from app import db
@@ -217,15 +217,15 @@ class PostType(db.Model):
 
 
 class PostDisplay(db.Model):
-    __tablename__= 'post_display'
+    __tablename__ = 'post_display'
 
     id = Column(Integer, primary_key=True)
     post_id = Column(ForeignKey(u'posts.id', ondelete=u'CASCADE',
                                 onupdate=u'CASCADE'), nullable=False)
     display = Column(String)
-    
-    post = relationship(u'Post', back_populates=u'post_display', 
-                                foreign_keys=[post_id])
+
+    post = relationship(u'Post', back_populates=u'post_display',
+                        foreign_keys=[post_id])
 
     def __unicode__(self):
         return u'%s' % self.display
@@ -268,7 +268,7 @@ class Post(db.Model):
     language = relationship(u'Language')
     last_changed_by_user = relationship(
         u'User', primaryjoin='Post.last_changed_by == User.id')
-    
+
     post_type = relationship(u'PostType')
     post_display = relationship(u'PostDisplay', back_populates=u'post')
     images = relationship('XPostImage', back_populates='post',
@@ -277,7 +277,6 @@ class Post(db.Model):
         'XPostAttachment', back_populates='post',
         order_by=lambda: XPostAttachment.attachment_order)
     tags = relationship('Tag', secondary=x_post_tag, back_populates='posts')
-    
 
     def __unicode__(self):
         return u'%s [%d]' % (self.title, self.id)

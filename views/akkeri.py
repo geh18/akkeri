@@ -1,15 +1,16 @@
-from app import app, render_template, templated
+from app import app, templated
 from flask import abort
 import models
-from sqlalchemy import desc
 
 
 @app.route('/')
 @templated('index.html')
 def index():
-    posts = models.Post.query.filter_by(is_draft=False).all()     
-    
-    index = next((i for i, post in enumerate(posts) if post.post_display and post.post_display[0].display==u'cover_post'), 0)
+    posts = models.Post.query.filter_by(is_draft=False).all()
+
+    index = next((i for i, post in enumerate(posts)
+                 if post.post_display and
+                 post.post_display[0].display == u'cover_post'), 0)
 
     cover_post = posts.pop(index)
 
