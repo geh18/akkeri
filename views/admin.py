@@ -385,6 +385,10 @@ class TagModelView(AdminModelView):
     PARTIAL_ACCESS_COLUMNS = ('name', 'posts', 'images', 'attachments')
 
 
+class PostDisplayModelView(OnlyForFullAccessModelView):
+    pass
+
+
 class RoleModelView(OnlyForFullAccessModelView):
     pass
 
