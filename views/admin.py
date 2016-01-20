@@ -315,6 +315,8 @@ class PostModelView(AdminModelView):
         'title', 'is_draft', 'summary', 'body', 'published',
         'images', 'attachments', 'tags')
     USER_ID_COLUMN = 'author_id'
+    column_list = (
+            'title', 'slug', 'post_type', 'created', 'published')
     form_excluded_columns = ('created', 'changed')
     form_overrides = {
         'body': TMCETextAreaField,
