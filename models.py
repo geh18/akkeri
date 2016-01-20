@@ -216,6 +216,21 @@ class PostType(db.Model):
         return u'%s' % self.label
 
 
+class PostDisplay(db.Model):
+    __tablename__= 'post_display'
+
+    id = Column(Integer, primary_key=True)
+    post_id = Column(ForeignKey(u'posts.id', ondelete=u'CASCADE',
+                                onupdate=u'CASCADE'), nullable=False)
+    display = Column(String)
+    
+    post = relationship(u'Post', back_populates=u'post_display', 
+                                foreign_keys=[post_id])
+
+    def __unicode__(self):
+        return u'%s' % self.display
+
+
 class Post(db.Model):
     __tablename__ = 'posts'
 
@@ -249,18 +264,20 @@ class Post(db.Model):
                      default=datetime.datetime.now,
                      onupdate=datetime.datetime.now)
     published = Column(DateTime, index=True)
-
     author = relationship(u'User', primaryjoin='Post.author_id == User.id')
     language = relationship(u'Language')
     last_changed_by_user = relationship(
         u'User', primaryjoin='Post.last_changed_by == User.id')
+    
     post_type = relationship(u'PostType')
+    post_display = relationship(u'PostDisplay', back_populates=u'post')
     images = relationship('XPostImage', back_populates='post',
                           order_by=lambda: XPostImage.image_order)
     attachments = relationship(
         'XPostAttachment', back_populates='post',
         order_by=lambda: XPostAttachment.attachment_order)
     tags = relationship('Tag', secondary=x_post_tag, back_populates='posts')
+    
 
     def __unicode__(self):
         return u'%s [%d]' % (self.title, self.id)

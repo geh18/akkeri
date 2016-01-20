@@ -7,9 +7,13 @@ from sqlalchemy import desc
 @app.route('/')
 @templated('index.html')
 def index():
-    posts = models.Post.query.filter_by(
-            is_draft=False).order_by(desc('published')).limit(20)
-    return dict(posts=posts)
+    posts = models.Post.query.filter_by(is_draft=False).all()     
+    
+    index = next((i for i, post in enumerate(posts) if post.post_display and post.post_display[0].display==u'cover_post'), 0)
+
+    cover_post = posts.pop(index)
+
+    return locals()
 
 
 @app.route('/post/<path:slug>/')

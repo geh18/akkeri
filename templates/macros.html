@@ -75,9 +75,14 @@
 
 {% endmacro %}
 
-{% macro cover_news(news=None) %}
+{% macro cover_post(post) %}
     <div class="cover-news shrinkin">
-        <img src="/static/cache/tn/2015/11/12242089_10154509916183438_1006218838_n_720x540_1_80.jpg" class="image">        <div class="info">
+			{% if post.first_image %}
+				<img src="{{ post.first_image.image_path | thumbnail('1200x610', crop=True) }}" class="image">
+			{% else %}
+				<img src="/static/cache/tn/2015/11/12242089_10154509916183438_1006218838_n_720x540_1_80.jpg" class="image">
+			{% endif %}
+			 <div class="info">
             <div class="meta">
                 <span class="type"><i class="fa fa-newspaper-o"></i>{{ post.post_type.name_is }}</span>
                 <span class="author"><i class="fa fa-user"></i>{{ post.author.fullname }}</span>
@@ -110,15 +115,18 @@
 {% macro article_list(posts) %}
     <div class="article-list">
     {% for post in posts %}
-        {% set display = loop.index0 | article_display %}
-        
-        {% if display== 'cover_news' %}
-            </div>
-            {{ cover_news(post) }}
-            <div class="article-list">
-        {% else %}
-            {{ display | getattr(post) }}
-        {% endif %}
+		{% if post.post_display %}
+			{% set display = post.post_display[0].display %}
+			{% if display== 'cover_post' %}
+				</div>
+				{{ cover_post(post) }}
+				<div class="article-list">
+			{% else %}
+				{{ display | getattr(post) }}
+			{% endif %}
+		{% else %}
+			{{ article_item_1(post) }}
+		{% endif %}
     {% endfor %}
     </div>
 {% endmacro%}

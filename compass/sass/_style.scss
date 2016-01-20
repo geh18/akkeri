@@ -29,6 +29,7 @@ i {
 
 /* Dedicated for the depth perception of some part of page*/
 .shrinkin {
+    overflow: hidden;
     width: 92%;
     margin: 0 auto;
     background-color: $body-color;
