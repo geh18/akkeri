@@ -224,7 +224,7 @@ class PostDisplay(db.Model):
     description = Column(String)
 
     def __unicode__(self):
-        return u'%s' % self.display
+        return u'%s' % self.label
 
 
 class Post(db.Model):
