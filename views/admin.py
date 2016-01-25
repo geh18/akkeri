@@ -382,7 +382,10 @@ class UserModelView(OnlyForFullAccessModelView):
 
 class TagModelView(AdminModelView):
     USER_ID_COLUMN = None
-    PARTIAL_ACCESS_COLUMNS = ('name', 'posts', 'images', 'attachments')
+    FULL_ACCESS_COLUMNS = (
+            'name', 'is_important', 'for_posts', 'for_images',
+            'for_attachments', 'posts', 'images', 'attachments')
+    PARTIAL_ACCESS_COLUMNS = ('name', )
 
 
 class PostDisplayModelView(OnlyForFullAccessModelView):
