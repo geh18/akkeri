@@ -7,7 +7,7 @@ import bcrypt
 from PIL import Image
 from jinja2 import Markup
 
-from wtforms import TextAreaField
+from wtforms import TextAreaField, HiddenField
 from wtforms.widgets import TextArea
 from flask_admin import Admin, AdminIndexView, helpers, expose, form
 from flask import url_for, redirect, request, current_app, abort
@@ -303,6 +303,12 @@ class ImageModelView(AdminModelView):
     FULL_ACCESS_ROLES = set(['group_editor', 'all_images'])
     PARTIAL_ACCESS_ROLES = set([
         'group_refugee', 'group_volunteer', 'group_oped', 'own_images'])
+    FULL_ACCESS_COLUMNS = (
+            'owner', 'image_path', 'title', 'credit', 'caption',
+            'image_taken', 'active', 'available_to_others', 'tags', )
+    PARTIAL_ACCESS_COLUMNS = (
+            'image_path', 'title', 'credit', 'caption',
+            'image_taken', 'active', 'available_to_others', 'tags', )
     USER_ID_COLUMN = 'owner_id'
     column_list = ('title', 'image_path')
     form_overrides = {
@@ -324,6 +330,19 @@ class ImageModelView(AdminModelView):
             allow_overwrite=False,
             thumbnail_size=(100, 100, True)),
     }
+
+    def create_model(self, form):
+        owner = None
+        try:
+            owner = form.owner.data
+        except AttributeError:
+            form.owner = HiddenField(
+                    default=lambda: flask_login.current_user,
+                    _name='owner', _form=form)
+            form._fields['owner'] = form.owner
+        if not owner:
+            form.owner.data = flask_login.current_user
+        super(ImageModelView, self).create_model(form)
 
 
 class TMCETextAreaWidget(TextArea):
