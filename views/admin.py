@@ -37,6 +37,15 @@ def day_subdir(prefix_dir=None):
         return '%04d/%02d/%02d/' % (td.year, td.month, td.day)
 
 
+def _thumbnail(image_path, size='140x105', crop=True):
+    if not image_path:
+        return ''
+    thumb = Thumbnail(None,
+                      static_folder=current_app.static_folder,
+                      static_url_path=current_app.static_url_path)
+    return thumb.thumbnail(image_path, size, crop)
+
+
 class AkkeriAdminIndexView(AdminIndexView):
     # AdminIndexView: Default view for /admin/ url
     @expose('/')
@@ -252,8 +261,25 @@ class AttachmentModelView(AdminModelView):
     }
 
 
-class AkkeriImageUploadField(form.ImageUploadField, UniqueUploadMixin):
+class AkkeriImageUploadInput(form.ImageUploadInput):
+    """
+    Once an image has been uploaded, we want the corresponding image URL to be
+    immutable. Hence we remove the Delete and Upload buttons from the edit
+    form. Also, we show a larger, proportionally scaled thumbnail than that
+    ordinarily provided by flask-admin.
+    """
 
+    data_template = ('<div class="akkeri-image-thumbnail">'
+            ' <img %(image)s>'
+            '</div>')
+
+    def get_url(self, field):
+        filename = field.data
+        return _thumbnail(filename, '250x250', False)
+
+
+class AkkeriImageUploadField(form.ImageUploadField, UniqueUploadMixin):
+    widget = AkkeriImageUploadInput()
     url_relative_path = 'images/'
 
     def validate(self, form, extra_validators=None):
@@ -282,15 +308,10 @@ class ImageModelView(AdminModelView):
     form_overrides = {
         'image_path': AkkeriImageUploadField,
     }
-    def _thumbnail(view, ctx, model, name):
-        if not model.image_path:
-            return ''
-        thumb = Thumbnail(None,
-                          static_folder=current_app.static_folder,
-                          static_url_path=current_app.static_url_path)
-        thumburl = thumb.thumbnail(model.image_path, '140x105', True)
+    def _tn(view, ctx, model, name):
+        thumburl = _thumbnail(model.image_path)
         return Markup(u'<img src="%s" alt="%s">' % (thumburl, model.title))
-    column_formatters = {'image_path': _thumbnail}
+    column_formatters = {'image_path': _tn}
     form_excluded_columns = ('bytes', 'width', 'height')
     # Passed to the AkkeriImageUploadField constructor
     form_args = {
