@@ -5,6 +5,7 @@ import datetime
 import sys
 import bcrypt
 from PIL import Image
+from jinja2 import Markup
 
 from wtforms import TextAreaField
 from wtforms.widgets import TextArea
@@ -15,6 +16,7 @@ import flask_login
 
 from forms import LoginForm
 from akkeri.utils import slugify
+from akkeri.thumbnailer import Thumbnail
 
 
 # Used for admin model view class discovery
@@ -280,6 +282,15 @@ class ImageModelView(AdminModelView):
     form_overrides = {
         'image_path': AkkeriImageUploadField,
     }
+    def _thumbnail(view, ctx, model, name):
+        if not model.image_path:
+            return ''
+        thumb = Thumbnail(None,
+                          static_folder=current_app.static_folder,
+                          static_url_path=current_app.static_url_path)
+        thumburl = thumb.thumbnail(model.image_path, '140x105', True)
+        return Markup(u'<img src="%s" alt="%s">' % (thumburl, model.title))
+    column_formatters = {'image_path': _thumbnail}
     form_excluded_columns = ('bytes', 'width', 'height')
     # Passed to the AkkeriImageUploadField constructor
     form_args = {
