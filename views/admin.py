@@ -313,6 +313,7 @@ class AttachmentModelView(OptionalOwnerAdminModelView):
     }
     form_args = {
         'owner': dict(default=lambda: flask_login.current_user),
+        'active': dict(default=True),
         # passed to the AttachmentUploadField constructor
         'attachment_path': dict(
             label='Attachment File',
@@ -384,6 +385,7 @@ class ImageModelView(OptionalOwnerAdminModelView):
     form_excluded_columns = ('bytes', 'width', 'height')
     form_args = {
         'owner': dict(default=lambda: flask_login.current_user),
+        'active': dict(default=True),
         # Passed to the AkkeriImageUploadField constructor
         'image_path': dict(
             label='Image',
