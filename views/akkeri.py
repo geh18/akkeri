@@ -2,18 +2,41 @@ from app import app, templated
 from flask import abort
 import models
 
+def get_by_display(posts, post_display):
+    index = next((i for i, post in enumerate(posts)
+                 if post.post_display and
+                 post.post_display.label == post_display), None)
+
+    return index
+
+
+def switch_places(ls, a, b):
+    # ls = [x0, x1, ..., xi], a,b = [0,...i]
+    # ls2 = switch_places(ls, a, b) 
+    # ls2 ls[a] => ls[b] && ls[b] => ls[a]
+    ls[b], ls[a] = ls[a], ls[b]
+    return ls
+
 
 @app.route('/')
 @templated('index.html')
 def index():
-    posts = models.Post.query.filter_by(is_draft=False).all()
+    featured = {0: 'cover_post', 
+                5: 'article_item_2',
+                6: 'article_item_3'}
 
-    index = next((i for i, post in enumerate(posts)
-                 if post.post_display and
-                 post.post_display.label == u'cover_post'), 0)
+    p = models.Post
+    posts = p.query.\
+                filter_by(is_draft=False).\
+                filter(p.post_type_id.in_(p.POST_TYPE_IDS)).\
+                all()
 
-    cover_post = posts.pop(index)
-
+    
+    for key in featured:
+        a = get_by_display(posts, featured[key])
+        if a:
+            posts = switch_places(posts, a, key)
+    
     return locals()
 
 

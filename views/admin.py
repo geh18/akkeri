@@ -394,8 +394,8 @@ class RoleModelView(OnlyForFullAccessModelView):
 
 
 class PostTypeModelView(OnlyForFullAccessModelView):
-    pass
-
+    # display primary key
+    column_display_pk = True
 
 class LanguageModelView(OnlyForFullAccessModelView):
     pass

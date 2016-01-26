@@ -24,51 +24,56 @@
 
 {% macro article_item_1(post, thumb_size='120x120', thumb_crop=True,
                 css_class='teaser', with_date=True, heading_level=3) %}
-  
+
   {% set img = post.first_image %}
 
-    <div class="col-md-6 article-item-1">
-        <img src="/static/images/2016/01/14/portrait_thumb.jpg" class="author_image">
-        <div class"meta">
-            <span class="type">{{ post.post_type.name_is }}</span>
-            <span class="author">Nafn. N. Nafnsson</span>
-            <span class="date">{{ post.published }}</span>
+    <div class="col-sm-6 post article-item-1">
+     <div class="wrapper">
+        <img src="/static/images/2016/01/14/portrait_thumb.jpg" class="author-image">
+        <div class="meta">
+            <span class="type"><i class="fa fa-newspaper-o"></i>{{ post.post_type.name_is }}</span>
+            <span class="author"><i class="fa fa-user"></i>{{ post.author.fullname }}</span>
+            <span class="date"><i class="fa fa-calendar"></i>{{ post.published }}</span>
         </div>
         <h2 class="title">{{ post.title | safe }}</h2>
         <p class="teaser">{{ post.summary | safe }}</p>
+      </div>
     </div>
 {% endmacro %}
 
 
 {% macro article_item_2(post, thumb_size='120x120', thumb_crop=True,
-                css_class='teaser', with_date=True, heading_level=3) %}
+                css='article-item-2', with_date=True, heading_level=3) %}
 
-    <div class="row article-item-2">
-        <div class="col-md-6">
+    <div class="row post {{ css }}">
+      <div class="wrapper">
+        <div class="col-sm-6 image">
           {% set img = post.first_image %}
           {% if img %}
           <img src="{{ img.image_path| thumbnail('590x315', crop=True) }}"
-          class="article_image">
+          class="article-image">
           {% endif %}
         </div>
-        
-        <div class="col-md-6">
-            <div class"meta">
-                <span class="type">{{ post.post_type.name_is }}</span>
-                <span class="author">{{ post.author.fullname }}</span>
-                <span class="date">{{ post.published }}</span>
+
+        <div class="col-sm-6 content">
+            <div class="meta">
+                <span class="type"><i class="fa fa-newspaper-o"></i>{{ post.post_type.name_is }}</span>
+                <span class="author"><i class="fa fa-user"></i>{{ post.author.fullname }}</span>
+                <span class="date"><i class="fa fa-calendar"></i>{{ post.published }}</span>
             </div>
             <h2 class="title">{{ post.title | safe }}</h2>
-            <p class="teaser">{{ post.summary | safe }}</p>
+            <img src="{{ img.image_path | thumbnail('110x110', crop=True) }}"
+                class="image-sm">
+            <div class="teaser">{{ post.summary | safe }}</div>
         </div>
+      </div>
     </div>
 
 {% endmacro %}
 
 
-{% macro article_item_3(post, thumb_size='120x120', thumb_crop=True,
-                css_class='teaser', with_date=True, heading_level=3) %}
-
+{% macro article_item_3(post) %}
+   {{ article_item_2(post, css='article-item-3') }}
 {% endmacro %}
 
 {% macro article_item_default(post=None) %}
@@ -76,7 +81,7 @@
 {% endmacro %}
 
 {% macro cover_post(post) %}
-    <div class="cover-news shrinkin">
+    <div class="cover-post shrinkin">
 			{% if post.first_image %}
 				<img src="{{ post.first_image.image_path | thumbnail('1200x610', crop=True) }}" class="image">
 			{% else %}
@@ -117,7 +122,7 @@
     {% for post in posts %}
 		{% if post.post_display %}
 			{% set display = post.post_display.label %}
-			{% if display== 'cover_post' %}
+			{% if display == 'cover_post' %}
 				</div>
 				{{ cover_post(post) }}
 				<div class="article-list">

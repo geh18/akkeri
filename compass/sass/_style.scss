@@ -9,6 +9,7 @@ $light-gray: #e2e2e2;
 
 $cont-width: 1180px;
 
+$list-padding: 30px;
 
 body {
     background-color: $body-color;
@@ -51,7 +52,7 @@ i {
     overflow: hidden;
 }
 
-.cover-news {
+.cover-post {
     position: relative;
     .image {
         width: 100%;
@@ -117,14 +118,9 @@ i {
 }
 
 .article-item-1 {
-    border: 1px solid $light-gray;
     border-right: 0px;
     padding: 0px;
     height: 321px;
-}
-
-.article-item-2 {
-    clear: both;
 }
 
 .footer {
@@ -132,4 +128,67 @@ i {
     .content {
         padding: 300px;
     }
+}
+
+.post {
+    border: 1px solid $light-gray;
+    padding: $list-padding;
+
+    .author-image {
+       border-radius: 60px;
+       width: 64px;
+       float: left;
+       margin-right: 15px;
+    }
+    .teaser {
+        clear: left;
+        margin-top: 22px;
+    }
+    .meta {
+        position: relative;
+        top: 3px;
+        i { margin-left: 10px; margin-right: 5px; }
+        .type i { margin-left: 0px; }
+    }
+    .title {
+        position: relative;
+        bottom: 4px;
+    }
+    .wrapper {
+        overflow: hidden;
+        height: 100%; 
+    }
+}
+
+.article-item-2 {
+    .image { overflow: hidden; }
+    .image-sm { display: none; }
+    .content { padding-right: $list-padding; }
+    clear: both;
+    padding: 20px 0px;
+}
+
+.article-item-3 {
+    @extend .article-item-2;
+    .image { float: right; }
+    .content { padding-left: (15+$list-padding); }
+}
+
+@media (max-width: 767px) {
+.article-item-2, .article-item-3 {
+    .image { display: none; }
+    .image-sm {
+        display: block;
+        float: left;
+        margin-right: 8px;
+    }
+    .teaser {
+        clear: none;
+        margin: 0px;
+        padding: 0px;
+    }
+}
+.article-item-2 {
+    .content { padding-left: (15+$list-padding); }
+}
 }
