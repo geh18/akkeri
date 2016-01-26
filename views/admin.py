@@ -5,8 +5,9 @@ import datetime
 import sys
 import bcrypt
 from PIL import Image
+from jinja2 import Markup
 
-from wtforms import TextAreaField
+from wtforms import TextAreaField, HiddenField
 from wtforms.widgets import TextArea
 from flask_admin import Admin, AdminIndexView, helpers, expose, form
 from flask import url_for, redirect, request, current_app, abort
@@ -15,6 +16,7 @@ import flask_login
 
 from forms import LoginForm
 from akkeri.utils import slugify
+from akkeri.thumbnailer import Thumbnail
 
 
 # Used for admin model view class discovery
@@ -33,6 +35,15 @@ def day_subdir(prefix_dir=None):
         return '%s/%04d/%02d/%02d/' % (prefix_dir, td.year, td.month, td.day)
     else:
         return '%04d/%02d/%02d/' % (td.year, td.month, td.day)
+
+
+def _thumbnail(image_path, size='140x105', crop=True):
+    if not image_path:
+        return ''
+    thumb = Thumbnail(None,
+                      static_folder=current_app.static_folder,
+                      static_url_path=current_app.static_url_path)
+    return thumb.thumbnail(image_path, size, crop)
 
 
 class AkkeriAdminIndexView(AdminIndexView):
@@ -250,8 +261,25 @@ class AttachmentModelView(AdminModelView):
     }
 
 
-class AkkeriImageUploadField(form.ImageUploadField, UniqueUploadMixin):
+class AkkeriImageUploadInput(form.ImageUploadInput):
+    """
+    Once an image has been uploaded, we want the corresponding image URL to be
+    immutable. Hence we remove the Delete and Upload buttons from the edit
+    form. Also, we show a larger, proportionally scaled thumbnail than that
+    ordinarily provided by flask-admin.
+    """
 
+    data_template = ('<div class="akkeri-image-thumbnail">'
+            ' <img %(image)s>'
+            '</div>')
+
+    def get_url(self, field):
+        filename = field.data
+        return _thumbnail(filename, '250x250', False)
+
+
+class AkkeriImageUploadField(form.ImageUploadField, UniqueUploadMixin):
+    widget = AkkeriImageUploadInput()
     url_relative_path = 'images/'
 
     def validate(self, form, extra_validators=None):
@@ -275,11 +303,21 @@ class ImageModelView(AdminModelView):
     FULL_ACCESS_ROLES = set(['group_editor', 'all_images'])
     PARTIAL_ACCESS_ROLES = set([
         'group_refugee', 'group_volunteer', 'group_oped', 'own_images'])
+    FULL_ACCESS_COLUMNS = (
+            'owner', 'image_path', 'title', 'credit', 'caption',
+            'image_taken', 'active', 'available_to_others', 'tags', )
+    PARTIAL_ACCESS_COLUMNS = (
+            'image_path', 'title', 'credit', 'caption',
+            'image_taken', 'active', 'available_to_others', 'tags', )
     USER_ID_COLUMN = 'owner_id'
     column_list = ('title', 'image_path')
     form_overrides = {
         'image_path': AkkeriImageUploadField,
     }
+    def _tn(view, ctx, model, name):
+        thumburl = _thumbnail(model.image_path)
+        return Markup(u'<img src="%s" alt="%s">' % (thumburl, model.title))
+    column_formatters = {'image_path': _tn}
     form_excluded_columns = ('bytes', 'width', 'height')
     # Passed to the AkkeriImageUploadField constructor
     form_args = {
@@ -292,6 +330,19 @@ class ImageModelView(AdminModelView):
             allow_overwrite=False,
             thumbnail_size=(100, 100, True)),
     }
+
+    def create_model(self, form):
+        owner = None
+        try:
+            owner = form.owner.data
+        except AttributeError:
+            form.owner = HiddenField(
+                    default=lambda: flask_login.current_user,
+                    _name='owner', _form=form)
+            form._fields['owner'] = form.owner
+        if not owner:
+            form.owner.data = flask_login.current_user
+        super(ImageModelView, self).create_model(form)
 
 
 class TMCETextAreaWidget(TextArea):
@@ -382,7 +433,10 @@ class UserModelView(OnlyForFullAccessModelView):
 
 class TagModelView(AdminModelView):
     USER_ID_COLUMN = None
-    PARTIAL_ACCESS_COLUMNS = ('name', 'posts', 'images', 'attachments')
+    FULL_ACCESS_COLUMNS = (
+            'name', 'is_important', 'for_posts', 'for_images',
+            'for_attachments', 'posts', 'images', 'attachments')
+    PARTIAL_ACCESS_COLUMNS = ('name', )
 
 
 class PostDisplayModelView(OnlyForFullAccessModelView):
