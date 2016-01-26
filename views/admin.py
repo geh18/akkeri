@@ -8,7 +8,8 @@ from PIL import Image
 from jinja2 import Markup
 
 from wtforms import TextAreaField, HiddenField
-from wtforms.widgets import TextArea
+from wtforms.widgets import TextArea, HTMLString, html_params
+from werkzeug.datastructures import FileStorage
 from flask_admin import Admin, AdminIndexView, helpers, expose, form
 from flask import url_for, redirect, request, current_app, abort
 from flask_admin.contrib.sqla import ModelView
@@ -189,6 +190,30 @@ class AdminModelView(ModelView):
         return self._apply_partial_filter(query)
 
 
+class OptionalOwnerAdminModelView(AdminModelView):
+    """
+    Used for admin model views with an Owner/Author field which is selectable
+    by users with full access but not by those who have partial access.
+    """
+    OWNER_FIELD_NAME = 'owner'
+
+    def create_model(self, form):
+        owner = None
+        try:
+            owner = getattr(form, self.OWNER_FIELD_NAME).data
+        except AttributeError:
+            setattr(form, self.OWNER_FIELD_NAME,
+                    HiddenField(
+                        default=lambda: flask_login.current_user,
+                        _name=self.OWNER_FIELD_NAME, _form=form))
+            form._fields[self.OWNER_FIELD_NAME] = getattr(
+                form, self.OWNER_FIELD_NAME)
+        if not owner:
+            getattr(form, self.OWNER_FIELD_NAME).data \
+                    = flask_login.current_user
+        super(OptionalOwnerAdminModelView, self).create_model(form)
+
+
 class UniqueUploadMixin(object):
     """
     Used for uploads of both attachments and images in order to ensure that
@@ -217,7 +242,37 @@ class UniqueUploadMixin(object):
         return filename
 
 
+class AkkeriFileUploadInput(form.FileUploadInput):
+    """
+    Once an attachment has been uploaded, we want the corresponding attachment
+    URL to be immutable. Hence we remove the Delete and Upload buttons from the
+    edit form. Instead, we show a link to the file itself for easy retrieval.
+    """
+
+    data_template = ('<div class="akkeri-attachment-file-path">'
+            ' <a href="%(full_path)s" target="_blank">%(filename)s</a>'
+            '</div>')
+
+    def __call__(self, field, **kwargs):
+        kwargs.setdefault('id', field.id)
+        kwargs.setdefault('name', field.name)
+        template = self.data_template if field.data else self.empty_template
+        if field.data and isinstance(field.data, FileStorage):
+            value = field.data.filename
+        else:
+            value = field.data or ''
+        return HTMLString(template % {
+            'file': html_params(type='file', value=value, **kwargs),
+            'filename': value,
+            'full_path': os.path.join(
+                current_app.static_url_path,
+                current_app.config.get('ATTACHMENTS_SUBDIR', 'attachments'),
+                value)
+            })
+
+
 class AttachmentUploadField(form.FileUploadField, UniqueUploadMixin):
+    widget = AkkeriFileUploadInput()
 
     def validate(self, form, extra_validators=None):
         return True
@@ -234,12 +289,18 @@ class AttachmentUploadField(form.FileUploadField, UniqueUploadMixin):
                 'ATTACHMENTS_SUBDIR', 'attachments'))
 
 
-class AttachmentModelView(AdminModelView):
+class AttachmentModelView(OptionalOwnerAdminModelView):
     FULL_ACCESS_ROLES = set(['group_editor', 'all_attachments'])
     PARTIAL_ACCESS_ROLES = set([
         'group_refugee', 'group_volunteer', 'group_oped', 'own_attchments'])
     USER_ID_COLUMN = 'owner_id'
-
+    FULL_ACCESS_COLUMNS = (
+            'owner', 'attachment_path', 'title', 'credit', 'caption',
+            'attachment_date', 'active', 'available_to_others', 'tags',
+            'added', 'changed')
+    PARTIAL_ACCESS_COLUMNS = (
+            'attachment_path', 'title', 'credit', 'caption',
+            'attachment_date', 'active', 'tags')
     column_list = (
             'attachment_path', 'title', 'owner', 'added')
     form_excluded_columns = ('bytes', 'posts', )
@@ -251,6 +312,7 @@ class AttachmentModelView(AdminModelView):
         'attachment_path': AttachmentUploadField,
     }
     form_args = {
+        'owner': dict(default=lambda: flask_login.current_user),
         # passed to the AttachmentUploadField constructor
         'attachment_path': dict(
             label='Attachment File',
@@ -299,18 +361,19 @@ class AkkeriImageUploadField(form.ImageUploadField, UniqueUploadMixin):
                 'IMAGES_SUBDIR', 'images'))
 
 
-class ImageModelView(AdminModelView):
+class ImageModelView(OptionalOwnerAdminModelView):
     FULL_ACCESS_ROLES = set(['group_editor', 'all_images'])
     PARTIAL_ACCESS_ROLES = set([
         'group_refugee', 'group_volunteer', 'group_oped', 'own_images'])
     FULL_ACCESS_COLUMNS = (
             'owner', 'image_path', 'title', 'credit', 'caption',
-            'image_taken', 'active', 'available_to_others', 'tags', )
+            'image_taken', 'active', 'available_to_others', 'tags',
+            'added', 'changed')
     PARTIAL_ACCESS_COLUMNS = (
             'image_path', 'title', 'credit', 'caption',
-            'image_taken', 'active', 'available_to_others', 'tags', )
+            'image_taken', 'active', 'tags', )
     USER_ID_COLUMN = 'owner_id'
-    column_list = ('title', 'image_path')
+    column_list = ('title', 'owner', 'added', 'image_path')
     form_overrides = {
         'image_path': AkkeriImageUploadField,
     }
@@ -319,8 +382,9 @@ class ImageModelView(AdminModelView):
         return Markup(u'<img src="%s" alt="%s">' % (thumburl, model.title))
     column_formatters = {'image_path': _tn}
     form_excluded_columns = ('bytes', 'width', 'height')
-    # Passed to the AkkeriImageUploadField constructor
     form_args = {
+        'owner': dict(default=lambda: flask_login.current_user),
+        # Passed to the AkkeriImageUploadField constructor
         'image_path': dict(
             label='Image',
             base_path=AkkeriImageUploadField.base_path,
@@ -330,19 +394,10 @@ class ImageModelView(AdminModelView):
             allow_overwrite=False,
             thumbnail_size=(100, 100, True)),
     }
-
-    def create_model(self, form):
-        owner = None
-        try:
-            owner = form.owner.data
-        except AttributeError:
-            form.owner = HiddenField(
-                    default=lambda: flask_login.current_user,
-                    _name='owner', _form=form)
-            form._fields['owner'] = form.owner
-        if not owner:
-            form.owner.data = flask_login.current_user
-        super(ImageModelView, self).create_model(form)
+    form_widget_args = {
+        'added': {'disabled': True},
+        'changed': {'disabled': True},
+    }
 
 
 class TMCETextAreaWidget(TextArea):
@@ -358,14 +413,19 @@ class TMCETextAreaField(TextAreaField):
     widget = TMCETextAreaWidget()
 
 
-class PostModelView(AdminModelView):
+class PostModelView(OptionalOwnerAdminModelView):
     FULL_ACCESS_ROLES = set(['group_editor', 'all_posts'])
     PARTIAL_ACCESS_ROLES = set([
         'group_refugee', 'group_volunteer', 'group_oped', 'own_posts'])
+    FULL_ACCESS_COLUMNS = (
+        'author', 'language', 'post_type', 'title', 'summary',
+        'body', 'is_draft', 'published', 'post_display', 'author_visible',
+        'author_line', 'images', 'attachments', 'tags')
     PARTIAL_ACCESS_COLUMNS = (
-        'title', 'is_draft', 'summary', 'body', 'published',
+        'title', 'summary', 'body', 'is_draft', 'published',
         'images', 'attachments', 'tags')
     USER_ID_COLUMN = 'author_id'
+    OWNER_FIELD_NAME = 'author'
     column_list = (
             'title', 'slug', 'post_type', 'created', 'published')
     form_excluded_columns = ('created', 'changed')
