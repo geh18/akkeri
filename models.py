@@ -10,6 +10,8 @@ from sqlalchemy.event import listens_for
 from sqlalchemy.orm import relationship
 from app import db
 from flask import current_app
+from akkeri.utils import slugify
+import flask_login
 
 
 # NOTE:
@@ -69,6 +71,8 @@ class Attachment(db.Model):
     caption = Column(Text)
     bytes = Column(Integer, nullable=False, server_default=text("0"))
     attachment_date = Column(DateTime)
+    # NOTE: preview_image + image are not currently used and are inaccessible
+    # in the admin
     preview_image = Column(ForeignKey(
         u'images.id', ondelete=u'SET NULL', onupdate=u'CASCADE'))
     active = Column(Boolean, nullable=False, server_default=text("true"))
@@ -81,6 +85,7 @@ class Attachment(db.Model):
                      onupdate=datetime.datetime.now)
 
     owner = relationship(u'User')
+    # Not used -- see comment on preview_image
     image = relationship(u'Image')
     posts = relationship('XPostAttachment', back_populates='attachment')
     tags = relationship('Tag', secondary=x_attachment_tag,
@@ -294,6 +299,65 @@ class Post(db.Model):
         return '/%s/%s/' % (prefix, self.slug)
 
 
+def post_before_upd_ins(mapper, connection, instance):
+    """
+    This def contains actions to be performed before inserting or updating a
+    Post. It is called from post_before_insert and post_before_update.
+    """
+    user = flask_login.current_user
+    if not user.getattr('id', None):
+        user = None
+    # last_changed_by
+    if user and not instance.last_changed_by_user:
+        instance.last_changed_by_user = user
+    # is_draft and published exclude each other
+    if not instance.is_draft and instance.published is None:
+        instance.published = datetime.datetime.now()
+    elif instance.is_draft and instance.published:
+        instance.published = None
+    # guess post_type if missing:
+    if user and not instance.post_type:
+        instance.post_type_id = user.default_post_type_id()
+    # automatic slug generation/update:
+    slug = slugify(instance.title, fallback='without-title')
+    if len(slug) > 36:
+        slug = slug[:35] if slug[35]=='-' else slug[:36]
+    id_prefix = instance.id \
+            or connection.scalar("select max(id)+1 from posts") or 1
+    pub = instance.published
+    date_prefix = str(pub.date()) if pub else ''
+    if date_prefix and instance.post_type_id in instance.POST_TYPE_IDS:
+        # we're dealing with a post, article or newsitem: prefix with date
+        dated_slug = date_prefix + '_' + slug
+        if instance.slug == dated_slug:
+            slug = dated_slug
+        else:
+            # check if we have it already, and append id_prefix if we do
+            found = connection.scalar(
+                "select id from posts where slug = '%s'" % dated_slug)
+            if found and found != instance.id:
+                slug = date_prefix + '_' + id_prefix + slug
+            else:
+                slug = dated_slug
+    else:
+        # pages/profiles/unpublished: prefix with the expected or actual id:
+        slug = str(id_prefix) + '_' + slug
+    instance.slug = slug
+    # TODO: slug history table for URL permanence?
+
+
+@listens_for(Post, 'before_insert')
+def post_before_insert(mapper, connection, instance):
+    post_before_upd_ins(mapper, connection, instance)
+    # special-purpose code for insert goes here...
+
+
+@listens_for(Post, 'before_update')
+def post_before_update(mapper, connection, instance):
+    post_before_upd_ins(mapper, connection, instance)
+    # special-purpose code for update goes here...
+
+
 class Role(db.Model):
     __tablename__ = 'roles'
 
@@ -392,6 +456,29 @@ class User(db.Model):
 
     def get_id(self):
         return u'%d' % self.id
+
+    def default_post_type_id(self):
+        """
+        Return a default post_type_id for material authored by this user.
+        Returns None if the user is an editor or superuser, otherwise
+        returns the type corresponding to the group he or she belongs to.
+        NOTE: Since the values are hardcoded, this is quite tightly coupled to
+        the database.
+        """
+        if self.is_superuser:
+            return None
+        group_labels = set([r.label for r in self.roles
+                            if r.label.startswith('group')])
+        if 'group_editor' in group_labels:
+            return None
+        elif 'group_refugee' in group_labels:
+            return 1 # refugee's journey
+        elif 'group_volunteer' in group_labels:
+            return 2 # volunteer's tale
+        elif 'group_oped' in group_labels:
+            return 3 # article/oped
+        return None
+
 
 # Association models, with extra info attached to the link.
 
