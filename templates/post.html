@@ -1,36 +1,90 @@
-{% extends "base.html" %}
+{% extends  "base.html" %}
+{% import "macros.html" as fp %}
+
 
 {% block title %}{{ post.post_type.name_is }}: {{ post.title |safe }}{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="page-header">
-        <h1>Akkeri - færsla</h1>
-    </div>
-    <div>
-        <h2>{{ post.title | safe }}</h2>
-        <p class="meta">
-            Höf.: {{ post.author.fullname }}
-            | Birt: {{ post.published }}
-            | Gerð efnis: {{ post.post_type.name_is }}
-        </p>
-        {% set img = post.first_image %}
-        {% if img %}
-        <div>
-            <a href="/static/images/{{ img.image_path }}" target="_blank" title="{{ img.title }} - {{img.width}}x{{img.height}}, {{ (img.bytes / 1024) | round(1) }} KB"><img src="{{ img.image_path | thumbnail('720x540', crop=True) }}" class="img-responsive" /></a>
+<div class="container post-page">
+  <div class="row">
+    <div class="col-sm-8 col-md-9 article right">
+       <div class="nav-bar xs visible-xs">
+            <a href="/" class="logo">Akkeri</a>
+       </div>
+        <div class="wrapper">
+            {{ the_article() }}
         </div>
-        {% endif %}
-        <div class="post-body">
-            {{ post.body | safe }}
-        </div>
-        {% if post.images|length > 1 %}
-          <h3>Aukamyndir</h3>
-          <ul>
-          {% for img in post.images[1:] %}
-            <li><img src="{{ img.image_path | thumbnail('200x200', crop=True) }}" /></li> 
-          {% endfor %}
-          </ul>
-        {% endif %}
     </div>
+
+    <div class="col-sm-4 col-md-3 side-bar left">
+        {{ menu() }}
+        {{ suggested_posts() }}
+    </div>
+ </div>
 </div>
 {% endblock %}
+
+{% macro menu() %}
+   <div class="nav-bar hidden-xs">
+        <a href="/" class="logo">Akkeri</a>
+        <!--<div class="menu-items">
+            <h4>SÖGUR</h4>
+            <h4>GREINAR</h4>
+            <h4>FRÉTTIR</h4>
+            <h4>UPPLÝSINGAR</h4>
+        </div>-->
+   </div>
+{% endmacro %}
+
+{% macro suggested_posts() %}
+    {% for post in side_posts %}
+        <div class="item">
+            <a class="title" href="{{ post.get_url() }}">
+                {{ post.title | safe }}
+            </a>
+            <img src="/static/images/2016/01/14/portrait_thumb.jpg"
+            class="author-image">
+            <h5 class="author"><i class="fa fa-user"></i>
+                {{ post.author.fullname }}
+            </h5>
+            <div class="teaser">{{ post.summary | safe }}</div>
+        </div>
+    {% endfor %}
+{% endmacro %}
+
+
+{% macro the_article() %}
+    {% set img = post.first_image %}
+
+    {% if img %}
+      <div class="image-wrapper">
+        <img src="{{ img.image_path | thumbnail('720x540', crop=True) }}"
+        class="main-image" />
+                <img src="/static/images/2016/01/14/portrait_thumb.jpg"
+                class="author-image">
+      </div>
+    {% endif %}
+    <div class="article-body">
+        <div class="meta">
+            <span class="name"><i class="fa fa-user"></i>{{
+            post.author.fullname }}</span>
+            {% if post.location %}
+                <span class="location">
+                    <i class="fa fa-globe"></i>{{ post.location }}</span>
+            {% elif post.author.user_location %}
+                <span class="location">
+                    <i class="fa fa-globe"></i>{{ post.author.user_location
+                    }}</span>
+            {% else %}
+                <span class="date"><i class="fa fa-calendar"></i>{{
+                post.published }} </span>
+            {% endif %}
+        </div>
+
+        <h2>{{ post.title | safe }}</h2>
+
+        <div class="post-body">
+            {{ post.body |safe }}
+        </div>
+    </div>
+{% endmacro %}

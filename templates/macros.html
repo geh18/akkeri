@@ -35,11 +35,14 @@
             <span class="author"><i class="fa fa-user"></i>{{ post.author.fullname }}</span>
             <span class="date"><i class="fa fa-calendar"></i>{{ post.published }}</span>
         </div>
-        <h2 class="title">{{ post.title | safe }}</h2>
+        <a href="{{ post.get_url() }}">
+          <h2 class="title">{{ post.title | safe }}</h2>
+        </a>
         <p class="teaser">{{ post.summary | safe }}</p>
       </div>
     </div>
 {% endmacro %}
+
 
 
 {% macro article_item_2(post, thumb_size='120x120', thumb_crop=True,

@@ -363,7 +363,7 @@ class PostModelView(AdminModelView):
     PARTIAL_ACCESS_ROLES = set([
         'group_refugee', 'group_volunteer', 'group_oped', 'own_posts'])
     PARTIAL_ACCESS_COLUMNS = (
-        'title', 'is_draft', 'summary', 'body', 'published',
+        'title', 'location', 'is_draft', 'summary', 'body', 'published',
         'images', 'attachments', 'tags')
     USER_ID_COLUMN = 'author_id'
     column_list = (
