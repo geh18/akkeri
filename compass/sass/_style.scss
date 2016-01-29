@@ -231,13 +231,23 @@ i {
     }
 
     .item {
-        max-height: 190px;
+        position: relative;
+        max-height: 218px;
         overflow: hidden;
-        margin-bottom: 42px;
+        margin-bottom: 10px;
         padding-top: 28px;
         font-size: 11px;
         border-top: 1px dashed;
      }
+    .teaser:after {
+        content: ' ';
+        height: 20px;
+        display: block;
+        position: absolute;
+        width: 100%;
+        bottom: 0px;
+        background-image: linear-gradient(to bottom, transparent, #192636);
+    }
     .item:first-child { 
         padding-top: 0px;
     }
@@ -273,6 +283,10 @@ i {
     
     .article-body {
         padding: 15px;
+        padding: 0 47px;
+        @media (max-width: 767px) {
+            padding: 0 30px;
+        }
     }
     .image-wrapper {
         position: relative;
@@ -288,11 +302,17 @@ i {
             border-top-right-radius: $border-radius;
         }
     }
+    .post-content {
+        max-width: 600px; 
+    }
     .meta {
         text-align: center;
         margin-top: 34px;
         border-bottom: 1px dashed lightgray;
         padding-bottom: 12px;
+        .fa {
+            margin-right: 8px;
+        }
         span {
             margin-right: 25px;
             font-size: 15px;
