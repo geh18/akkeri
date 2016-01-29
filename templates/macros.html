@@ -1,27 +1,3 @@
-{% macro teaser(post, thumb_size='120x120', thumb_crop=True,
-                css_class='teaser', with_date=True, heading_level=3) %}
-  {% set img = post.first_image %}
-  <div class="{{ css_class }}">
-    <h{{ heading_level }}>
-      <a href="{{ post.get_url() }}">{{ post.title | safe }}</a>
-    </h{{ heading_level }}>
-    <div class="summary clearfix {% if img %}with-img{% else %}without-img{% endif %}">
-      {% if img %}
-        <img src="{{ img.image_path | thumbnail(thumb_size, crop=thumb_crop) }}" alt="{{ img.title }}" />
-      {% endif %}
-      {% if with_date %}
-        <div class="dateline"><small>
-            {{ post.published }}
-            | {{ post.post_type.name_is }}
-            | {{ post.images | count }} mynd{% if post.images | count != 1 %}ir{% endif %}
-        </small></div>
-      {% endif %}
-      {{ post.summary | safe }}
-    </div>
-  </div>
-{% endmacro %}
-
-
 {% macro article_item_1(post, thumb_size='120x120', thumb_crop=True,
                 css_class='teaser', with_date=True, heading_level=3) %}
 
@@ -33,12 +9,13 @@
         <div class="meta">
             <span class="type"><i class="fa fa-newspaper-o"></i>{{ post.post_type.name_is }}</span>
             <span class="author"><i class="fa fa-user"></i>{{ post.author.fullname }}</span>
-            <span class="date"><i class="fa fa-calendar"></i>{{ post.published }}</span>
+            <span class="date"><i class="fa fa-calendar"></i>{{
+            post.published| format_date }}</span>
         </div>
         <a href="{{ post.get_url() }}">
           <h2 class="title">{{ post.title | safe }}</h2>
         </a>
-        <p class="teaser">{{ post.summary | safe }}</p>
+        <div class="teaser">{{ post.summary | safe }}</div>
       </div>
     </div>
 {% endmacro %}
@@ -62,7 +39,8 @@
             <div class="meta">
                 <span class="type"><i class="fa fa-newspaper-o"></i>{{ post.post_type.name_is }}</span>
                 <span class="author"><i class="fa fa-user"></i>{{ post.author.fullname }}</span>
-                <span class="date"><i class="fa fa-calendar"></i>{{ post.published }}</span>
+                <span class="date"><i class="fa fa-calendar"></i>{{
+                post.published|format_date }}</span>
             </div>
             <h2 class="title">{{ post.title | safe }}</h2>
             <img src="{{ img.image_path | thumbnail('110x110', crop=True) }}"
@@ -95,7 +73,8 @@
                 <span class="type"><i class="fa fa-newspaper-o"></i>{{ post.post_type.name_is }}</span>
                 <span class="author"><i class="fa fa-user"></i>{{ post.author.fullname }}</span>
                 <span class="location"><i class="fa fa-map-marker"></i>Reykjavík</span>
-                <span class="date"><i class="fa fa-calendar"></i>{{ post.published }}</span>
+                <span class="date"><i class="fa fa-calendar"></i>{{
+                post.published|format_date }}</span>
             </div>
             <h1 class="title">{{ post.title | safe }}</h1>
             <p class="teaser">{{ post.summary | safe }}</p>

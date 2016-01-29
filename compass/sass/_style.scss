@@ -34,7 +34,7 @@ i {
 
 @each $m, $margin in (mt, margin-top),
                      (mr, margin-right),
-                     (mb, margin-bottom), 
+                     (mb, margin-bottom),
                      (ml, margin-left) {
     @for $i from 1 through 3 {
         .#{$m}-#{$i*5} { #{$margin}: #{5px*$i} }
@@ -50,9 +50,9 @@ i {
 }
 
 .container {
-    padding: 0px;   
+    padding: 0px;
     background-color: $body-color;
-    
+
     @media (min-width: 1200px) {
         width: 1180px;
     }
@@ -65,6 +65,21 @@ i {
     overflow: hidden;
 }
 
+.teaser {
+    position: relative;
+}
+
+.side-bar, .article-item-1, .article-item-2, .article-item-3 {
+    .teaser:after {
+        content: ' ';
+        height: 20px;
+        display: block;
+        position: absolute;
+        width: 100%;
+        bottom: 0px;
+        background-image: linear-gradient(to bottom, transparent, white);
+    }
+}
 .cover-post {
     position: relative;
     .image {
@@ -173,7 +188,7 @@ i {
     }
     .wrapper {
         overflow: hidden;
-        height: 100%; 
+        height: 100%;
     }
 }
 
@@ -229,7 +244,10 @@ i {
             padding-top: 31px;
         }
     }
-
+    .teaser:after {
+         background-image: linear-gradient(to bottom, transparent,
+         $akkeri-blue);
+    }
     .item {
         position: relative;
         max-height: 218px;
@@ -239,16 +257,7 @@ i {
         font-size: 11px;
         border-top: 1px dashed;
      }
-    .teaser:after {
-        content: ' ';
-        height: 20px;
-        display: block;
-        position: absolute;
-        width: 100%;
-        bottom: 0px;
-        background-image: linear-gradient(to bottom, transparent, #192636);
-    }
-    .item:first-child { 
+    .item:first-child {
         padding-top: 0px;
     }
     .author-image {
@@ -261,9 +270,9 @@ i {
         color: white;
     }
     .author {
-        color: $gold-color;    
+        color: $gold-color;
     }
-    .teaser { 
+    .teaser {
         color: white;
     }
 }
@@ -280,9 +289,9 @@ i {
         border-bottom-right-radius: $border-radius;
         border-top-right-radius: $border-radius;
     }
-    
     .article-body {
         padding: 15px;
+
         padding: 0 47px;
         @media (max-width: 767px) {
             padding: 0 30px;
@@ -303,7 +312,7 @@ i {
         }
     }
     .post-content {
-        max-width: 600px; 
+        max-width: 600px;
     }
     .meta {
         text-align: center;
@@ -324,8 +333,8 @@ i {
         width: 100%;
         position: relative;
         padding: 7px;
-        
-        .logo { 
+
+        .logo {
             display: block;
             margin: 0 auto;
             padding: 7px;

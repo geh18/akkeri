@@ -305,8 +305,9 @@ def post_before_upd_ins(mapper, connection, instance):
     Post. It is called from post_before_insert and post_before_update.
     """
     user = flask_login.current_user
-    if not user.getattr('id', None):
-        user = None
+    # import pdb; pdb.set_trace()
+    #if not user.getattr('id', None):
+       # user = None
     # last_changed_by
     if user and not instance.last_changed_by_user:
         instance.last_changed_by_user = user
