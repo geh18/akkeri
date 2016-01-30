@@ -12,8 +12,8 @@
             <span class="date"><i class="fa fa-calendar"></i>{{
             post.published| format_date }}</span>
         </div>
-        <a href="{{ post.get_url() }}">
-          <h2 class="title">{{ post.title | safe }}</h2>
+        <a href="{{ post.get_url() }}" class="title">
+            {{ post.title | safe }}
         </a>
         <div class="teaser">{{ post.summary | safe }}</div>
       </div>
@@ -42,7 +42,9 @@
                 <span class="date"><i class="fa fa-calendar"></i>{{
                 post.published|format_date }}</span>
             </div>
-            <h2 class="title">{{ post.title | safe }}</h2>
+            <a href="{{ post.get_url() }}" class="title">
+                {{ post.title | safe }}
+            </a>
             <img src="{{ img.image_path | thumbnail('110x110', crop=True) }}"
                 class="image-sm">
             <div class="teaser">{{ post.summary | safe }}</div>
@@ -70,23 +72,29 @@
 			{% endif %}
 			 <div class="info">
             <div class="meta">
-                <span class="type"><i class="fa fa-newspaper-o"></i>{{ post.post_type.name_is }}</span>
+                <span class="type hidden-xs"><i class="fa fa-newspaper-o"></i>{{ post.post_type.name_is }}</span>
                 <span class="author"><i class="fa fa-user"></i>{{ post.author.fullname }}</span>
                 <span class="location"><i class="fa fa-map-marker"></i>Reykjavík</span>
-                <span class="date"><i class="fa fa-calendar"></i>{{
+                <span class="date hidden-xs"><i class="fa fa-calendar"></i>{{
                 post.published|format_date }}</span>
             </div>
-            <h1 class="title">{{ post.title | safe }}</h1>
-            <p class="teaser">{{ post.summary | safe }}</p>
-            <a href="#" class="more">Lesa meira</a>
+            <a href="{{ post.get_url() }}" class="title">
+                {{ post.title | safe }}
+            </a>
+            <div class="teaser hidden-xs">{{ post.summary | safe }}</div>
+            <a href="{{ post.get_url() }}" class="more hidden-xs">Lesa meira</a>
         </div>
     </div>
 {% endmacro %}
 
 
 {% macro page_header() %}
-    <div class="nav-bar">
+    <div class="nav-bar hidden-xs">
         <div class="logo">Akkeri</div>
+    </div>
+
+    <div class="nav-bar xs visible-xs">
+        <a href="#" class="logo">Akkeri</a>
     </div>
 {% endmacro %}
 

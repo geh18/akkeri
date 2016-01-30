@@ -1,45 +1,4 @@
-$body-color: #0e1721;
-$akkeri-blue: #192636;
-$article-bg-color: #ffffff;
-$read-more-color: #0e1721;
-$gold-color: #d0b852;
-/* We define a variable in case we want a different shade of white*/
-$white-color: #ffffff;
-$light-gray: #e2e2e2;
-
-$cont-width: 1180px;
-
-$list-padding: 30px;
-
-body {
-    background-color: $body-color;
-    font-size: 14pxi;
-}
-
-p {
-  font-size: 1.2em;
-}
-
-i {
-    color: $gold-color;
-    margin-right: 4px;
-}
-
-.clear {
-    clear: both;
-}
-
-.left { float: left; }
-.right { float: right; }
-
-@each $m, $margin in (mt, margin-top),
-                     (mr, margin-right),
-                     (mb, margin-bottom),
-                     (ml, margin-left) {
-    @for $i from 1 through 3 {
-        .#{$m}-#{$i*5} { #{$margin}: #{5px*$i} }
-    }
-}
+@import 'shared';
 
 /* Dedicated for the depth perception of some part of page*/
 .shrinkin {
@@ -82,16 +41,22 @@ i {
 }
 .cover-post {
     position: relative;
+    min-height: 360px;
+    border-top-right-radius: 10px;
+    border-top-left-radius: 10px;
+
     .image {
         width: 100%;
+        min-width: 410px;
     }
     .info {
+        width: 100%;
         position: absolute;
         bottom: 0px;
         color: #fff;
         text-align: center;
-        padding: 9em;
-        padding-bottom: 7.5em;
+        padding: 6%;
+        padding-bottom: 6%;
         background: -moz-linear-gradient(top, rgba(255,255,255,0) 0%,
         rgba(26,39,55,1) 46%, rgba(24,37,53,1) 100%);
         background: -webkit-linear-gradient(top, rgba(255,255,255,0)
@@ -103,18 +68,24 @@ i {
     }
     .more {
         width: 139px;
-        height: 50px;
         background-color: $read-more-color;
         color: $gold-color;
         font-size: 18px;
-        padding: 13px;
+        padding: 8px;
         border-radius: 4px;
     }
     .title {
-        margin-bottom: 25px;
+        @extend ._title;
+        margin-bottom: 10px;
+        margin-top: 5px;
+        font-size: 30px;
+        color: white;
+        display: block;
     }
     .teaser {
-        margin-bottom: 40px;
+        margin-bottom: 20px;
+        height: 50px;
+        overflow: hidden;
     }
     .meta {
         span {
@@ -125,6 +96,15 @@ i {
             i.fa {
                 margin-right: 10px;
             }
+        }
+    }
+    @media (max-width: $scr-sm){
+        .title { font-size: 25px;
+            margin-top: 8px;
+            margin-bottom: 25px; }
+        .info {
+            padding: 2%;
+            padding-bottom: 0px;
         }
     }
 }
@@ -171,6 +151,7 @@ i {
 .post {
     border: 1px solid $light-gray;
     padding: $list-padding;
+    position: relative;
 
     .teaser {
         clear: left;
@@ -180,15 +161,27 @@ i {
         position: relative;
         top: 3px;
         i { margin-left: 10px; margin-right: 5px; }
-        .type i { margin-left: 0px; }
+        i:first-child { margin-left: 0px; }
+        span { margin-right: 5px; }
     }
     .title {
-        position: relative;
-        bottom: 4px;
+        @extend ._title;
     }
     .wrapper {
         overflow: hidden;
         height: 100%;
+    }
+}
+
+@media (max-width: $scr-sm) {
+    .post {
+        .type { display: none; }
+        .date { display: none; }
+    }
+}
+@media (min-width: $scr-sm) and (max-width: $scr-md) {
+    .post .meta {
+        position: absolute;
     }
 }
 
@@ -206,7 +199,7 @@ i {
     .content { padding-left: (15+$list-padding); }
 }
 
-@media (max-width: 767px) {
+@media (max-width: $scr-sm) {
 .article-item-2, .article-item-3 {
     .image { display: none; }
     .image-sm {
@@ -261,7 +254,7 @@ i {
         padding-top: 0px;
     }
     .author-image {
-        @extends .author-image;
+        @extend .author-image;
         margin-top: 5px;
         float: right;
     }
@@ -293,7 +286,7 @@ i {
         padding: 15px;
 
         padding: 0 47px;
-        @media (max-width: 767px) {
+        @media (max-width: $scr-sm) {
             padding: 0 30px;
         }
     }
@@ -303,7 +296,7 @@ i {
             position: absolute;
             bottom: -26px;
             border: 3px solid white;
-            left: 50%;
+            left: 48%;
         }
         .main-image {
             width: 100%;
@@ -328,22 +321,38 @@ i {
             font-weight: bold;
         }
     }
-    .nav-bar.xs {
-        height: 100px;
-        width: 100%;
-        position: relative;
-        padding: 7px;
+}
+.nav-bar.xs {
+    height: 100px;
+    width: 100%;
+    position: relative;
+    padding: 7px;
+    background-color: $akkeri-blue;
 
-        .logo {
-            display: block;
-            margin: 0 auto;
-            padding: 7px;
-            font-size: 19px;
-            border-radius: 50%;
-            height: 90px;
-            width: 90px;
-            text-align: center;
-            line-height: 80px;
+    .logo {
+        display: block;
+        margin: 0 auto;
+        padding: 7px;
+        font-size: 19px;
+        border-radius: 50%;
+        height: 80px;
+        width: 80px;
+        text-align: center;
+        line-height: 70px;
+    }
+}
+
+@media (max-width: $scr-sm){
+    .post {
+        padding: 13px;
+        .content { padding: 13px; }
+    }
+}
+
+@media (min-width: $scr-sm) {
+    .post {
+        &.article-item-2, &.article-item-3 {
+            .title { font-size: 25px; }
         }
     }
 }
