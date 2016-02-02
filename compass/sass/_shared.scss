@@ -65,3 +65,20 @@ i {
 .title {
     font-family: 'Merriweather', serif;
 }
+
+.text-right { text-align: right; }
+
+.text-left { text-align: left; }
+
+.text-center { text-align: center; }
+
+.gold-font {
+    margin: 0px;
+    color: $gold-color;
+}
+
+.white-font {
+    color: white;
+}
+
+.bold { font-weight: bold;}

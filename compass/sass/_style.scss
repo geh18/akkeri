@@ -36,7 +36,10 @@
         position: absolute;
         width: 100%;
         bottom: 0px;
-        background-image: linear-gradient(to bottom, transparent, white);
+        background: -moz-linear-gradient(top, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 100%);
+        background: -webkit-linear-gradient(top, rgba(255,255,255,0) 0%,rgba(255,255,255,1) 100%);
+        background: linear-gradient(to bottom, rgba(255,255,255,0) 0%,rgba(255,255,255,1) 100%);
+        filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00ffffff', endColorstr='#ffffff',GradientType=0 );
     }
 }
 .cover-post {
@@ -109,20 +112,21 @@
     }
 }
 
+.logo {
+    color: #000;
+    background-color: #FFF;
+    font-size: 30px;
+    font-weight: bold;
+    border-radius: 50%;
+    height: 100px;
+    width: 100px;
+    text-align: center;
+    line-height: 100px;
+}
+
 .nav-bar {
     position: absolute;
     z-index: 10;
-    .logo {
-        color: #000;
-        background-color: #FFF;
-        font-size: 30px;
-        font-weight: bold;
-        border-radius: 50%;
-        height: 100px;
-        width: 100px;
-        text-align: center;
-        line-height: 100px;
-    }
     .logo:hover{
         text-decoration: none;
     }
@@ -135,9 +139,37 @@
 }
 
 .footer {
+    position: relative;
     background-color: $akkeri-blue;
     .content {
-        padding: 300px;
+        padding: 20px;
+    }
+    .sponsors {
+        color: white;
+        border-bottom: 1px dashed rgba(208, 165, 68,0.3);
+    }
+    .sponsore {
+        display: block;
+    }
+    .logo-wrapper { padding: 80px; }
+    .logo { margin: 0 auto; }
+    .sticky {
+        position: absolute;
+        top: 0px;
+        right: 51px;
+        color: $gold-color;
+        border: 1px solid $gold-color;
+        border-top: none;
+        border-bottom-right-radius: 3px;
+        border-bottom-left-radius: 3px;
+        padding: 7px;
+        font-size: 19px;
+        font-weight: bold;
+    }
+    @media (max-width: $scr-sm) {
+        .facebook {
+            margin-top: 53px;
+        }
     }
 }
 
@@ -173,6 +205,21 @@
     }
 }
 
+.post.article-item-1 {
+    .wrapper:after {
+        content: ' ';
+        height: 20px;
+        display: block;
+        position: absolute;
+        width: 100%;
+        bottom: 26px;
+        background: -moz-linear-gradient(top, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 100%);
+        background: -webkit-linear-gradient(top, rgba(255,255,255,0) 0%,rgba(255,255,255,1) 100%);
+        background: linear-gradient(to bottom, rgba(255,255,255,0) 0%,rgba(255,255,255,1) 100%);
+        filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00ffffff', endColorstr='#ffffff',GradientType=0 );
+    }
+}
+
 @media (max-width: $scr-sm) {
     .post {
         .type { display: none; }
@@ -182,6 +229,9 @@
 @media (min-width: $scr-sm) and (max-width: $scr-md) {
     .post .meta {
         position: absolute;
+    }
+    .article-item-2, .article-item-3 {
+        .meta { position: relative; }
     }
 }
 
@@ -237,10 +287,6 @@
             padding-top: 31px;
         }
     }
-    .teaser:after {
-         background-image: linear-gradient(to bottom, transparent,
-         $akkeri-blue);
-    }
     .item {
         position: relative;
         max-height: 218px;
@@ -248,8 +294,13 @@
         margin-bottom: 10px;
         padding-top: 28px;
         font-size: 11px;
-        border-top: 1px dashed;
      }
+    .item:after {
+         background: -moz-linear-gradient(top, rgba(255,255,255,0) 0%, rgba(25,38,54,1) 100%);
+background: -webkit-linear-gradient(top, rgba(255,255,255,0) 0%,rgba(25,38,54,1) 100%);
+background: linear-gradient(to bottom, rgba(255,255,255,0) 0%,rgba(25,38,54,1) 100%);
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00ffffff', endColorstr='#192636',GradientType=0 );
+    }
     .item:first-child {
         padding-top: 0px;
     }
@@ -355,4 +406,10 @@
             .title { font-size: 25px; }
         }
     }
+}
+
+.fb-comments, .fb-comments iframe[style], .fb-like-box, .fb-like-box iframe[style] {width: 100% !important;}
+.fb-comments span, .fb-comments iframe span[style], .fb-like-box span, .fb-like-box iframe span[style] {width: 100% !important;}
+.fb-like {
+    margin-top: 60px;
 }
