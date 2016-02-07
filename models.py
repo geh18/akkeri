@@ -166,7 +166,8 @@ class Image(db.Model):
                      onupdate=datetime.datetime.now)
 
     owner = relationship(u'User')
-    posts = relationship('XPostImage', back_populates='image')
+    posts = relationship('XPostImage', back_populates='image',
+                         cascade='save-update, delete, delete-orphan')
     tags = relationship('Tag', secondary=x_image_tag, back_populates='images')
 
     def __unicode__(self):
@@ -265,8 +266,8 @@ class Post(db.Model):
                      default=datetime.datetime.now,
                      onupdate=datetime.datetime.now)
     published = Column(DateTime, index=True)
-    post_display_id = Column(
-        ForeignKey(u'post_display.id', ondelete='SET NULL',
+    post_display_id = Column(ForeignKey(
+        u'post_display.id', ondelete='SET NULL',
         onupdate=u'CASCADE'), nullable=True)
 
     author = relationship(u'User', primaryjoin='Post.author_id == User.id')
@@ -305,9 +306,7 @@ def post_before_upd_ins(mapper, connection, instance):
     Post. It is called from post_before_insert and post_before_update.
     """
     user = flask_login.current_user
-    # import pdb; pdb.set_trace()
-    #if not user.getattr('id', None):
-       # user = None
+    # if not user.getattr('id', None): # user = None
     # last_changed_by
     if user and not instance.last_changed_by_user:
         instance.last_changed_by_user = user
@@ -322,9 +321,9 @@ def post_before_upd_ins(mapper, connection, instance):
     # automatic slug generation/update:
     slug = slugify(instance.title, fallback='without-title')
     if len(slug) > 36:
-        slug = slug[:35] if slug[35]=='-' else slug[:36]
+        slug = slug[:35] if slug[35] == '-' else slug[:36]
     id_prefix = instance.id \
-            or connection.scalar("select max(id)+1 from posts") or 1
+        or connection.scalar("select max(id)+1 from posts") or 1
     pub = instance.published
     date_prefix = str(pub.date()) if pub else ''
     if date_prefix and instance.post_type_id in instance.POST_TYPE_IDS:
@@ -337,7 +336,7 @@ def post_before_upd_ins(mapper, connection, instance):
             found = connection.scalar(
                 "select id from posts where slug = '%s'" % dated_slug)
             if found and found != instance.id:
-                slug = date_prefix + '_' + id_prefix + slug
+                slug = date_prefix + '_' + str(id_prefix) + slug
             else:
                 slug = dated_slug
     else:
@@ -473,11 +472,11 @@ class User(db.Model):
         if 'group_editor' in group_labels:
             return None
         elif 'group_refugee' in group_labels:
-            return 1 # refugee's journey
+            return 1  # refugee's journey
         elif 'group_volunteer' in group_labels:
-            return 2 # volunteer's tale
+            return 2  # volunteer's tale
         elif 'group_oped' in group_labels:
-            return 3 # article/oped
+            return 3  # article/oped
         return None
 
 
@@ -520,7 +519,7 @@ class XPostImage(db.Model):
     image_id = Column(
         ForeignKey(u'images.id', ondelete=u'CASCADE', onupdate=u'CASCADE'),
         nullable=False)
-    image_order = Column(Integer, nullable=False, server_default=text("1"))
+    image_order = Column(Integer, nullable=True, server_default=text("1"))
     custom_title = Column(String)
     custom_caption = Column(Text)
     linked_at = Column(DateTime, server_default=text("now()"),

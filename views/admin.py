@@ -1,23 +1,31 @@
 from __future__ import absolute_import
 
 import os
+import os.path as op
 import datetime
 import sys
 import bcrypt
 from PIL import Image
 from jinja2 import Markup
 
-from wtforms import TextAreaField, HiddenField
+from sqlalchemy import event
+from wtforms import TextAreaField, HiddenField, fields
 from wtforms.widgets import TextArea, HTMLString, html_params
 from werkzeug.datastructures import FileStorage
+# from werkzeug import secure_filename
 from flask_admin import Admin, AdminIndexView, helpers, expose, form
+from flask_admin.model.form import InlineFormAdmin
 from flask import url_for, redirect, request, current_app, abort
 from flask_admin.contrib.sqla import ModelView
+from flask_admin.contrib.sqla.fields import InlineModelFormList
+from flask_admin.contrib.sqla.form import InlineModelConverter
+
 import flask_login
 
 from forms import LoginForm
 from akkeri.utils import slugify
 from akkeri.thumbnailer import Thumbnail
+from models import XPostImage
 
 
 # Used for admin model view class discovery
@@ -417,6 +425,52 @@ class TMCETextAreaField(TextAreaField):
     widget = TMCETextAreaWidget()
 
 
+@event.listens_for(XPostImage, 'after_delete')
+def _handle_image_delete(mapper, conn, target):
+    pass
+
+
+class CustomInlineFieldListWidget(form.RenderTemplateWidget):
+    def __init__(self):
+        super(CustomInlineFieldListWidget, self).\
+                            __init__('admin/model/field_list.html')
+
+
+class CustomInlineModelFormList(InlineModelFormList):
+    widget = CustomInlineFieldListWidget()
+
+
+class CustomInlineModelConverter(InlineModelConverter):
+    inline_field_list_type = CustomInlineModelFormList
+
+
+class XPostImageInline(InlineFormAdmin):
+    form_excluded_columns = ['linked_at']
+
+    form_label = 'Image'
+
+    def __init__(self):
+        return super(XPostImageInline, self).__init__(XPostImage)
+
+    def postprocess_form(self, form_class):
+        form_class.upload = fields.FileField('Image')
+        return form_class
+
+    def on_model_change(self, form, model):
+        file_data = request.files.get(form.upload.name)
+        if file_data:
+            file_name = cleaned_filename(self, file_data)
+            base_path = AkkeriImageUploadField.base_path() + '/'
+            day_dir = day_subdir()
+            model.image.image_path = day_dir + file_name
+
+            image = base_path + day_dir + file_name
+
+            if not op.exists(op.dirname(base_path + day_dir)):
+                os.makedirs(os.path.dirname(base_path + day_dir), mode=0755)
+            file_data.save(image)
+
+
 class PostModelView(OptionalOwnerAdminModelView):
     FULL_ACCESS_ROLES = set(['group_editor', 'all_posts'])
     PARTIAL_ACCESS_ROLES = set([
@@ -436,10 +490,10 @@ class PostModelView(OptionalOwnerAdminModelView):
     form_overrides = {
         'body': TMCETextAreaField,
     }
-    from models import XPostImage, XPostAttachment
-    inline_models = (
-        (XPostImage, {'form_excluded_columns': ['linked_at']}),
-        (XPostAttachment, {'form_excluded_columns': ['linked_at']}), )
+
+    inline_model_form_converter = CustomInlineModelConverter
+    inline_models = [XPostImageInline()]
+
     create_template = 'admin/model/tmce_editor.html'
     edit_template = create_template
 
@@ -449,7 +503,6 @@ class HiddenWithoutFullAccessModelView(AdminModelView):
     Inherit from this in order to hide the menu item without making it
     impossible for the ordinary logged-in user to access the page.
     """
-
     USER_ID_COLUMN = None
 
     def is_visible(self):

@@ -1,0 +1,14 @@
+{% import 'admin/model/inline_list_base.html' as base with context %}
+
+{% macro render_field(field) %}
+{% set model = field.object_data %}                                        {% if model %}
+      {{ field.form.id }}
+    <p>{{ model.image_path }}<p>
+      <img src="{{ model.image_path | thumbnail('200x200', crop=True) }}" ></img>
+    {% else %}
+    {{ field }}
+  {% endif %}
+{% endmacro %}
+
+{{ base.render_inline_fields(field, template, render_field) }}
+~
