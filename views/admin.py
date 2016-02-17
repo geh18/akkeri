@@ -5,14 +5,12 @@ import os.path as op
 import datetime
 import sys
 import bcrypt
-from PIL import Image
+import PIL
 from jinja2 import Markup
-
 from sqlalchemy import event
-from wtforms import TextAreaField, HiddenField, fields
+from wtforms import TextAreaField, fields, HiddenField
 from wtforms.widgets import TextArea, HTMLString, html_params
 from werkzeug.datastructures import FileStorage
-# from werkzeug import secure_filename
 from flask_admin import Admin, AdminIndexView, helpers, expose, form
 from flask_admin.model.form import InlineFormAdmin
 from flask import url_for, redirect, request, current_app, abort
@@ -25,8 +23,7 @@ import flask_login
 from forms import LoginForm
 from akkeri.utils import slugify
 from akkeri.thumbnailer import Thumbnail
-from models import XPostImage
-
+from models import Image
 
 # Used for admin model view class discovery
 current_module = sys.modules[__name__]
@@ -202,6 +199,7 @@ class OptionalOwnerAdminModelView(AdminModelView):
     Used for admin model views with an Owner/Author field which is selectable
     by users with full access but not by those who have partial access.
     """
+    """
     OWNER_FIELD_NAME = 'owner'
 
     def create_model(self, form):
@@ -218,7 +216,8 @@ class OptionalOwnerAdminModelView(AdminModelView):
         if not owner:
             getattr(form, self.OWNER_FIELD_NAME).data \
                     = flask_login.current_user
-        super(OptionalOwnerAdminModelView, self).create_model(form)
+
+        super(OptionalOwnerAdminModelView, self).create_model(form)"""
 
 
 class UniqueUploadMixin(object):
@@ -360,7 +359,7 @@ class AkkeriImageUploadField(form.ImageUploadField, UniqueUploadMixin):
     def _save_file(self, data, filename):
         filename = self._ensure_unique(filename)
         if self.image is None:
-            self.image = Image.open(data)
+            self.image = PIL.Image.open(data)
         return super(AkkeriImageUploadField, self)._save_file(data, filename)
 
     @staticmethod
@@ -378,14 +377,15 @@ class ImageModelView(OptionalOwnerAdminModelView):
     FULL_ACCESS_COLUMNS = (
             'owner', 'image_path', 'title', 'credit', 'caption',
             'image_taken', 'active', 'available_to_others', 'tags',
-            'added', 'changed')
+            'added')
     PARTIAL_ACCESS_COLUMNS = (
             'image_path', 'title', 'credit', 'caption',
-            'image_taken', 'active', 'tags', )
+            'image_taken', 'active', 'tags', 'owner_id')
     USER_ID_COLUMN = 'owner_id'
     column_list = ('title', 'owner', 'added', 'image_path')
     form_overrides = {
         'image_path': AkkeriImageUploadField,
+        'owner_id': HiddenField
     }
 
     def _tn(view, ctx, model, name):
@@ -408,7 +408,6 @@ class ImageModelView(OptionalOwnerAdminModelView):
     }
     form_widget_args = {
         'added': {'disabled': True},
-        'changed': {'disabled': True},
     }
 
 
@@ -425,7 +424,7 @@ class TMCETextAreaField(TextAreaField):
     widget = TMCETextAreaWidget()
 
 
-@event.listens_for(XPostImage, 'after_delete')
+@event.listens_for(Image, 'after_delete')
 def _handle_image_delete(mapper, conn, target):
     pass
 
@@ -439,18 +438,23 @@ class CustomInlineFieldListWidget(form.RenderTemplateWidget):
 class CustomInlineModelFormList(InlineModelFormList):
     widget = CustomInlineFieldListWidget()
 
+    def display_row_controls(self, field):
+        return False
+
 
 class CustomInlineModelConverter(InlineModelConverter):
     inline_field_list_type = CustomInlineModelFormList
 
 
-class XPostImageInline(InlineFormAdmin):
-    form_excluded_columns = ['linked_at']
+class ImageInline(InlineFormAdmin):
+    form_columns = ('id', 'caption', 'owner_id')
 
-    form_label = 'Image'
+    form_overrides = {
+        'owner_id': HiddenField
+    }
 
     def __init__(self):
-        return super(XPostImageInline, self).__init__(XPostImage)
+        return super(ImageInline, self).__init__(Image)
 
     def postprocess_form(self, form_class):
         form_class.upload = fields.FileField('Image')
@@ -459,10 +463,11 @@ class XPostImageInline(InlineFormAdmin):
     def on_model_change(self, form, model):
         file_data = request.files.get(form.upload.name)
         if file_data:
+            model.owner = flask_login.current_user
             file_name = cleaned_filename(self, file_data)
             base_path = AkkeriImageUploadField.base_path() + '/'
             day_dir = day_subdir()
-            model.image.image_path = day_dir + file_name
+            model.image_path = day_dir + file_name
 
             image = base_path + day_dir + file_name
 
@@ -472,6 +477,7 @@ class XPostImageInline(InlineFormAdmin):
 
 
 class PostModelView(OptionalOwnerAdminModelView):
+    column_searchable_list = ('title', 'author.fullname')
     FULL_ACCESS_ROLES = set(['group_editor', 'all_posts'])
     PARTIAL_ACCESS_ROLES = set([
         'group_refugee', 'group_volunteer', 'group_oped', 'own_posts'])
@@ -480,8 +486,7 @@ class PostModelView(OptionalOwnerAdminModelView):
         'body', 'is_draft', 'published', 'post_display', 'author_visible',
         'author_line', 'images', 'attachments', 'tags')
     PARTIAL_ACCESS_COLUMNS = (
-        'title', 'location', 'is_draft', 'summary', 'body', 'published',
-        'images', 'attachments', 'tags')
+        'title', 'summary', 'body', 'location')
     USER_ID_COLUMN = 'author_id'
     OWNER_FIELD_NAME = 'author'
     column_list = (
@@ -492,7 +497,7 @@ class PostModelView(OptionalOwnerAdminModelView):
     }
 
     inline_model_form_converter = CustomInlineModelConverter
-    inline_models = [XPostImageInline()]
+    inline_models = [ImageInline()]
 
     create_template = 'admin/model/tmce_editor.html'
     edit_template = create_template
@@ -582,7 +587,7 @@ def setup_admin(app, db, login_manager):
 
     admin = Admin(
         app, name='Akkeri', index_view=AkkeriAdminIndexView(),
-        template_mode='bootstrap3')
+        template_mode='bootstrap3', base_template="admin/my_base.html")
 
     for attr in dir(models):
         if attr[0] == 'X' or not attr[0].isupper():
