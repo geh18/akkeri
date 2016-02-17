@@ -85,8 +85,6 @@ class Attachment(db.Model):
                      onupdate=datetime.datetime.now)
 
     owner = relationship(u'User')
-    # Not used -- see comment on preview_image
-    image = relationship(u'Image')
     posts = relationship('XPostAttachment', back_populates='attachment')
     tags = relationship('Tag', secondary=x_attachment_tag,
                         back_populates='attachments')
@@ -140,8 +138,8 @@ class Featured(db.Model):
     post = relationship(u'Post')
 
 
-class Image(db.Model):
-    __tablename__ = 'images'
+"""class PostImage(db.Model):
+    __tablename__ = 'post_image'
 
     id = Column(Integer, primary_key=True, server_default=text(
         "nextval('images_id_seq'::regclass)"))
@@ -152,26 +150,63 @@ class Image(db.Model):
     title = Column(String)
     credit = Column(String)
     caption = Column(Text)
-    image_taken = Column(DateTime)
     width = Column(Integer, nullable=False, server_default=text("0"))
     height = Column(Integer, nullable=False, server_default=text("0"))
     bytes = Column(Integer, nullable=False, server_default=text("0"))
-    active = Column(Boolean, nullable=False, server_default=text("true"))
+    post_id = Column(ForeignKey(u'posts.id', ondelete=u'CASCADE',
+                                onupdate=u'CASCADE'), nullable=False)
+    tags = relationship('Tag', back_populates='images')
+
+    owner = relationship(u'User')
+    post = relationship(u'Post', back_populates='images')
+
+    def get_full_image_path(self):
+        try:
+            base_dir = current_app.static_folder
+            subdir = current_app.config.get('IMAGES_SUBDIR', 'images')
+        except RuntimeError:
+            base_dir = os.path.join(
+                os.path.dirname(os.path.realpath(__file__)), 'static')
+            subdir = 'images'
+        base_dir = os.path.join(base_dir, subdir)
+        return os.path.join(base_dir, (self.image_path or ''))
+
+    def __unicode__(self):
+        return self.image_path"""
+
+
+class Image(db.Model):
+    __tablename__ = 'images'
+
+    id = Column(Integer, primary_key=True, server_default=text(
+        "nextval('images_id_seq'::regclass)"))
+    owner_id = Column(
+        ForeignKey(u'users.id', ondelete=u'RESTRICT', onupdate=u'CASCADE'),
+        nullable=True, index=True)
+    image_path = Column(String, nullable=False, unique=True)
+    title = Column(String)
+    credit = Column(String)
+    caption = Column(Text)
+    image_taken = Column(DateTime)
+    width = Column(Integer, nullable=True, server_default=text("0"))
+    height = Column(Integer, nullable=True, server_default=text("0"))
+    bytes = Column(Integer, nullable=True, server_default=text("0"))
+    active = Column(Boolean, nullable=True, server_default=text("true"))
     available_to_others = Column(
-        Boolean, nullable=False, server_default=text("false"))
+        Boolean, nullable=True, server_default=text("false"))
     added = Column(DateTime, index=True, server_default=text("now()"),
                    default=datetime.datetime.now)
     changed = Column(DateTime, server_default=text("now()"),
                      default=datetime.datetime.now,
                      onupdate=datetime.datetime.now)
+    post_id = Column(ForeignKey(u'posts.id'))
 
-    owner = relationship(u'User')
-    posts = relationship('XPostImage', back_populates='image',
-                         cascade='save-update, delete, delete-orphan')
     tags = relationship('Tag', secondary=x_image_tag, back_populates='images')
+    owner = relationship(u'User')
+    post = relationship(u'Post', backref='images')
 
     def __unicode__(self):
-        return self.image_path
+        return self.image_path or u''
 
     def get_full_image_path(self):
         try:
@@ -255,6 +290,7 @@ class Post(db.Model):
     slug = Column(String, nullable=False, unique=True)
     is_draft = Column(Boolean, nullable=False, server_default=text("false"))
     summary = Column(Text)
+    location = Column(String)
     body = Column(Text)
     post_type_id = Column(ForeignKey(
         u'post_types.id', ondelete=u'SET NULL', onupdate=u'CASCADE'))
@@ -276,12 +312,11 @@ class Post(db.Model):
         u'User', primaryjoin='Post.last_changed_by == User.id')
     post_type = relationship(u'PostType')
     post_display = relationship(u'PostDisplay')
-    images = relationship('XPostImage', back_populates='post',
-                          order_by=lambda: XPostImage.image_order)
+
+    tags = relationship('Tag', secondary=x_post_tag, back_populates='posts')
     attachments = relationship(
         'XPostAttachment', back_populates='post',
         order_by=lambda: XPostAttachment.attachment_order)
-    tags = relationship('Tag', secondary=x_post_tag, back_populates='posts')
 
     def __unicode__(self):
         return u'%s [%d]' % (self.title, self.id)
@@ -345,6 +380,10 @@ def post_before_upd_ins(mapper, connection, instance):
     instance.slug = slug
     # TODO: slug history table for URL permanence?
 
+    # set author
+    instance.author = user
+    instance.author_id = user.id
+
 
 @listens_for(Post, 'before_insert')
 def post_before_insert(mapper, connection, instance):
@@ -386,10 +425,10 @@ class Tag(db.Model):
     for_posts = Column(Boolean, nullable=False, server_default=text("true"))
     created = Column(DateTime, server_default=text("now()"),
                      default=datetime.datetime.now)
-
-    posts = relationship('Post', secondary=x_post_tag, back_populates='tags')
     images = relationship('Image', secondary=x_image_tag,
                           back_populates='tags')
+    posts = relationship('Post', secondary=x_post_tag, back_populates='tags')
+
     attachments = relationship(
         'Attachment', secondary=x_attachment_tag, back_populates='tags')
 
@@ -509,7 +548,7 @@ class XPostAttachment(db.Model):
             self.id, self.attachment, self.post)
 
 
-class XPostImage(db.Model):
+"""class XPostImage(db.Model):
     __tablename__ = 'x_post_image'
 
     id = Column(Integer, primary_key=True, server_default=text(
@@ -553,4 +592,5 @@ class XPostImage(db.Model):
         return self.image.bytes
 
     def __unicode__(self):
-        return u'<XPostImage %d: %s for %s>' % (self.id, self.image, self.post)
+        return u'<XPostImage %d: %s for %s>' % (self.id, self.image,
+        self.post)"""
