@@ -1,0 +1,101 @@
+#images-button {
+    width: 100%;
+}
+
+.nav.nav-tabs {
+    display: none;
+}
+#images {
+    legend { display: none; }
+    .inline-field.fresh {
+        clear: both;
+        width: 100%;
+    }
+     .inline-field img {
+        width: 100%;
+    }
+     .inline-field:last-child{
+        margin-right: 0px;
+    }
+     .inline-field {
+        width: 230px;
+        float: left;
+        margin-right: 1%;
+        width: 22%;
+        cursor: pointer;
+        position: relative;
+
+        &.edit-image {
+            legend { display: block; }
+            width: 100%;
+            img {
+                width: 10%;
+                float: left;
+            }
+            .inline-form-field {
+                width: 88%;
+                float: right;
+            }
+            .form-group {
+                margin-bottom: 8px;
+            }
+        }
+        .existing-image {
+            .edit {
+                background: rgba(0,0,0,0.7);
+                color: white;
+                position: absolute;
+                right: 0;
+                bottom: 0px;
+                padding: 1px 13px;
+                font-weight: bold;
+                font-size: 17px;
+            }
+        }
+    }
+}
+
+/* line 26, ../../compass/sass/admin_post.scss */
+#images .inline-field.edit-image {
+    width: 100%;
+}
+
+/* line 30, ../../compass/sass/admin_post.scss */
+#images .inline-field.edit-image img {
+  width: 10%;
+  float: left;
+}
+
+input, textarea {
+    border-radius: 0px!important;
+    box-shadow: none!important;
+}
+
+label {
+    color: #A39145;
+    font-size: 18px;
+}
+
+.form-group {
+    margin-bottom: 45px;
+
+    .inline-field {
+        label {
+            color: initial;
+            border-top: initial;
+            font-size: initial;
+        }
+    }
+    .form-control {
+        &#title {
+            height: 77px;
+            border-radius: 0px;
+            box-shadow: none;
+            font-size: 45px;
+        }
+        &#body {
+           height: 316px;
+           font-size: 19px;
+        }
+    }
+}

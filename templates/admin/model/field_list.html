@@ -3,15 +3,20 @@
 {% macro render_field(field) %}
     {% set model = field.object_data %}
     {% if model %}
-      {{ field.form.id }}
-      <img src="{{ model.image_path | thumbnail('200x200', crop=True) }}" ></img>
-      <div class="hidden">
-        {{ field }}
+      <div class="existing-image">
+          {{ field.form.id }}
+          <img class="image-src" src="{{ model.image_path | thumbnail('200x200', crop=True) }}" ></img>
+          <div class="hidden">
+            {{ field }}
+          </div>
+          <div class="edit">
+            {{ _gettext('Edit') }}
+          </div>
       </div>
     {% else %}
       {{ field }}
     {% endif %}
 {% endmacro %}
 
-{{ base.render_inline_fields(field, template, render_field, check ) }}
+{{ base.render_inline_fields(field, template, render_field) }}
 

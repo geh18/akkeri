@@ -9,7 +9,7 @@ import PIL
 from jinja2 import Markup
 from sqlalchemy import event
 from wtforms import TextAreaField, fields, HiddenField
-from wtforms.widgets import TextArea, HTMLString, html_params
+from wtforms.widgets import FileInput, TextArea, HTMLString, html_params
 from werkzeug.datastructures import FileStorage
 from flask_admin import Admin, AdminIndexView, helpers, expose, form
 from flask_admin.model.form import InlineFormAdmin
@@ -104,6 +104,8 @@ class AdminModelView(ModelView):
 
     FULL_ACCESS_COLUMNS = None
     PARTIAL_ACCESS_COLUMNS = None
+
+    edit_template = 'akkeri_edit.html'
 
     def _create_or_edit_form(self, formtype, obj=None):
         if formtype == 'create':
@@ -420,6 +422,16 @@ class TMCETextAreaWidget(TextArea):
         return super(TMCETextAreaWidget, self).__call__(field, **kwargs)
 
 
+class ImageFileInput(FileInput):
+    def __call__(self, field, **kwargs):
+        kwargs.setdefault('accept', 'image/*')
+        return super(ImageFileInput, self).__call__(field, **kwargs)
+
+
+class ImageFileField(fields.FileField):
+    widget = ImageFileInput()
+
+
 class TMCETextAreaField(TextAreaField):
     widget = TMCETextAreaWidget()
 
@@ -457,7 +469,7 @@ class ImageInline(InlineFormAdmin):
         return super(ImageInline, self).__init__(Image)
 
     def postprocess_form(self, form_class):
-        form_class.upload = fields.FileField('Image')
+        form_class.upload = ImageFileField('Image')
         return form_class
 
     def on_model_change(self, form, model):
@@ -477,6 +489,7 @@ class ImageInline(InlineFormAdmin):
 
 
 class PostModelView(OptionalOwnerAdminModelView):
+    name = 'Write'
     column_searchable_list = ('title', 'author.fullname')
     FULL_ACCESS_ROLES = set(['group_editor', 'all_posts'])
     PARTIAL_ACCESS_ROLES = set([
@@ -486,15 +499,15 @@ class PostModelView(OptionalOwnerAdminModelView):
         'body', 'is_draft', 'published', 'post_display', 'author_visible',
         'author_line', 'images', 'attachments', 'tags')
     PARTIAL_ACCESS_COLUMNS = (
-        'title', 'summary', 'body', 'location')
+        'title', 'body', 'location')
     USER_ID_COLUMN = 'author_id'
     OWNER_FIELD_NAME = 'author'
     column_list = (
             'title', 'slug', 'post_type', 'created', 'published')
     form_excluded_columns = ('created', 'changed')
-    form_overrides = {
-        'body': TMCETextAreaField,
-    }
+    # form_overrides = {
+    #     'body': TMCETextAreaField,
+    # }
 
     inline_model_form_converter = CustomInlineModelConverter
     inline_models = [ImageInline()]
@@ -595,6 +608,11 @@ def setup_admin(app, db, login_manager):
         model = getattr(models, attr)
         model_view_class = getattr(
                 current_module, attr + 'ModelView', AdminModelView)
+        extra = {}
+        if hasattr(model_view_class, 'name'):
+            extra = {'name': model_view_class.name,
+                     'menu_icon_value': 'fa-pencil-square-o',
+                     'menu_icon_type': 'fa'}
         if hasattr(model, '__bases__') and db.Model in model.__bases__:
-            admin.add_view(model_view_class(model, db.session))
+            admin.add_view(model_view_class(model, db.session, **extra))
     return admin

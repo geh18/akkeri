@@ -286,11 +286,11 @@ class Post(db.Model):
     author_visible = Column(Boolean, nullable=False,
                             server_default=text("true"))
     author_line = Column(String)
-    title = Column(String, nullable=False)
+    title = Column(String, nullable=True)
     slug = Column(String, nullable=False, unique=True)
     is_draft = Column(Boolean, nullable=False, server_default=text("false"))
     summary = Column(Text)
-    location = Column(String)
+    location = Column(String, nullable=False)
     body = Column(Text)
     post_type_id = Column(ForeignKey(
         u'post_types.id', ondelete=u'SET NULL', onupdate=u'CASCADE'))

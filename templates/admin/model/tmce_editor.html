@@ -1,78 +1,27 @@
+
 {% if request.path=='/admin/post/edit/' %}
-    {% extends 'admin/model/edit.html' %}
+    {% extends 'admin/model/akkeri_edit.html' %}
 {% else %}
-    {% extends 'admin/model/create.html' %}
+    {% extends 'admin/model/akkeri_create.html' %}
 {% endif %}
+
+
+{% block create_form %}
+    {% macro extra() %}
+        <input name="_continue_editing" type="submit" class="btn btn-default" value="{{ _gettext('Save') }}" />
+    {% endmacro %}
+    {{ lib.render_form(form, return_url, extra(), form_opts) }}
+{% endblock %}
 
 {% block head_css %}
     {{ super() }}
-    <style type="text/css">
-
-        #images.inline-field{
-            width: 100%;
-        }
-        #images .inline-field {
-            width: 230px;
-            float: left;
-            margin-right: 1%;
-            width: 22%;
-        }
-        #images .inline-field:last-child{
-            margin-right: 0px;
-        }
-        #images .inline-field img {
-            width: 100%;
-        }
-        #images .inline-field.fresh {
-            clear: both;
-            width: 100%;
-        }
-        #images-button {
-            width: 100%;
-        }
-    </style>
+    <link rel="stylesheet" href="{{url_for('static', filename='css/admin_post.css')}}"></link>
 {% endblock %}
 
 
 {% block tail %}
   {{ super() }}
-  <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
-<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
   <script type="text/javascript" src="//cdn.tinymce.com/4/tinymce.min.js"></script>
-  <script type="text/javascript">
-    tinymce.init({
-        selector: '.tinymce-editor',
-        height: 250
-    });
-
-    $('form').submit(function(e){
-
-        var image = $('.inline-field.fresh input[type="file"][id^=images-][id$=-upload]');
-
-        if (image.length > 0 && image.get(0).files.length == 0) {
-            e.preventDefault();
-            var empty_image_fields = image.closest('.inline-field');
-            empty_image_fields.remove();
-            $(this).submit();
-        }
-    });
-
-
-    $(function(){
-        $('#images .inline-field.well').draggable({
-            cursor: 'move',
-            revert: 'invalid',
-            distance: 20
-        });
-        $('#images').droppable({
-            tolerance: 'pointer',
-            accept: function (event, ui) {
-                return true;
-            },
-            drop: function(event, ui){
-                console.log('dropped');
-            }
-        }).sortable({revert: false});
-    });
-  </script>
+  <script type="text/javascript" src="{{ url_for('static', filename='js/admin_post.js') }}"></script>
 {% endblock %}
+

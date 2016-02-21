@@ -1,0 +1,32 @@
+body {
+    padding: 0px;
+}
+
+input[type='checkbox'] {
+    width: 25px;
+}
+
+.navbar-default .navbar-brand {
+    color: #FFF;
+    font-weight: bold;
+    font-size: 30px;
+}
+
+.navbar-default .navbar-nav>li>a {
+    color: #A39145;
+}
+
+.navbar-default .navbar-collapse, .navbar-default .navbar-form {
+        background: #192636;
+}
+
+// Edit form
+.form-group {
+    input[type=submit]:first-child {
+        display: none;
+    }
+}
+
+.navbar-default .navbar-nav>li>a:focus, .navbar-default .navbar-nav>li>a:hover {
+    color: #fff;
+}
