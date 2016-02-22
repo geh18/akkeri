@@ -6,7 +6,7 @@
     display: none;
 }
 #images {
-    legend { display: none; }
+    legend { display: none; border: none; }
     .inline-field.fresh {
         clear: both;
         width: 100%;
@@ -24,6 +24,8 @@
         width: 22%;
         cursor: pointer;
         position: relative;
+        background: white;
+        border: 1px dotted #9A9A9A;
 
         &.edit-image {
             legend { display: block; }
@@ -69,6 +71,19 @@
 input, textarea {
     border-radius: 0px!important;
     box-shadow: none!important;
+}
+
+.form-group {
+    textarea, input[type="text"], input[type="file"]  {
+        border-radius: 0px;
+        box-shadow: none;
+        border: none;
+        border-left: 5px solid gray;
+        background: #f8f8f8;
+    }
+    textarea#body {
+        min-height: 270px;
+    }
 }
 
 label {

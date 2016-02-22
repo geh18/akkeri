@@ -290,6 +290,7 @@ class Post(db.Model):
     slug = Column(String, nullable=False, unique=True)
     is_draft = Column(Boolean, nullable=False, server_default=text("false"))
     summary = Column(Text)
+    cover_image = Column(String, nullable=False)
     location = Column(String, nullable=False)
     body = Column(Text)
     post_type_id = Column(ForeignKey(

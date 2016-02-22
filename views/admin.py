@@ -499,15 +499,32 @@ class PostModelView(OptionalOwnerAdminModelView):
         'body', 'is_draft', 'published', 'post_display', 'author_visible',
         'author_line', 'images', 'attachments', 'tags')
     PARTIAL_ACCESS_COLUMNS = (
-        'title', 'body', 'location')
+        'cover_image', 'title', 'body', 'location')
     USER_ID_COLUMN = 'author_id'
     OWNER_FIELD_NAME = 'author'
     column_list = (
             'title', 'slug', 'post_type', 'created', 'published')
     form_excluded_columns = ('created', 'changed')
-    # form_overrides = {
-    #     'body': TMCETextAreaField,
-    # }
+
+    form_overrides = {
+        'cover_image': AkkeriImageUploadField,
+        #'body': TMCETextAreaField,
+    }
+
+    def _tn(view, ctx, model, name):
+        thumburl = _thumbnail(model.image_path)
+        return Markup(u'<img src="%s" alt="%s">' % (thumburl, model.title))
+    column_formatters = {'cover_image': _tn}
+    form_args = {
+        'cover_image': dict(
+            label='Article Image',
+            base_path=AkkeriImageUploadField.base_path,
+            url_relative_path=AkkeriImageUploadField.url_relative_path,
+            relative_path=day_subdir(),
+            namegen=cleaned_filename,
+            allow_overwrite=False,
+            thumbnail_size=(100, 100, True)),
+    }
 
     inline_model_form_converter = CustomInlineModelConverter
     inline_models = [ImageInline()]
