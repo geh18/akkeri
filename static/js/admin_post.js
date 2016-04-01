@@ -61,13 +61,11 @@ function readURL(input) {
 }
 
 $("#images .inline-field img").change(function(){
-    console.log('baaaaaaaaaaaaaaaaaaaaaaaaaaaaaam');
     readURL(this);
 });
 
 
 $(function() {
-    console.log('here 1');
     var observe;
     if (window.attachEvent) {
         observe = function (element, event, handler) {

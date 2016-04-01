@@ -447,6 +447,7 @@ class User(db.Model):
     email = Column(String, nullable=False, unique=True)
     fullname = Column(String, nullable=False)
     user_location = Column(String)
+    image = Column(String)
     active = Column(Boolean, nullable=False, server_default=text("true"))
     show_profile = Column(Boolean, nullable=False,
                           server_default=text("false"))
@@ -521,7 +522,6 @@ class User(db.Model):
 
 
 # Association models, with extra info attached to the link.
-
 
 class XPostAttachment(db.Model):
     __tablename__ = 'x_post_attachment'

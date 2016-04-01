@@ -1,35 +1,51 @@
 {% extends "admin/master.html" %}
 
+{% block head_css %}
+    <link rel="stylesheet" href="{{url_for('static', filename='js/lib/croppie/croppie.css')}}"></link>
+    {{ super() }}
+{% endblock %}
+
+{% macro render_field(field) %}
+  <dt>{{ field.label }}
+  <dd>{{ field(**kwargs)|safe }}
+  {% if field.errors %}
+    <ul class=errors>
+    {% for error in field.errors %}
+      <li>{{ error }}</li>
+    {% endfor %}
+    </ul>
+  {% endif %}
+  </dd>
+{% endmacro %}
+
 {% block body %}
 {{ super() }}
 <div class="row-fluid">
     <div>
         {% if current_user.is_authenticated %}
-        <p>You are logged in as <strong>{{ current_user.username }}</strong></p>
-        <p><a href="{{ url_for('admin.logout_view') }}">Logout</a></p>
+            {#<h2>{{ _gettext('Hi') }} {{ current_user.username }}</h2>#}
+            {#<p><a href="{{ url_for('admin.logout_view') }}">Logout</a></p>#}
+            <form method="POST" action="{{ url_for('admin.index') }}" enctype="multipart/form-data">
+                <div class="row">
+                    <div class="col-sm-4">
+                    {{ render_field(form.image) }}
+                    </div>
+                    <div class="col-sm-8"> 
+                    {{ render_field(form.fullname) }}
+                    {{ render_field(form.email) }} 
+                    {{ render_field(form.user_location) }} 
+                    </div>
+                </div>
+                <div class="row">
+                <div class="col-md-12">
+                <input type="Submit" value="{{ _gettext('Save') }}">
+                </div>
+                </div>
+            </form>
         {% else %}
-        <h1>Login</h1>
-        <p class="lead">
-        Please login to the Akkeri admin system.
-        </p>
-        <form class="login-form" method="POST" action="">
-            {{ form.hidden_tag() if form.hidden_tag }}
-            {% for f in form if f.type != 'CSRFTokenField' %}
-            <div>
-                {{ f.label(class_="label-"+f.name) }}
-                {{ f(class_="input-"+f.name) }}
-                {% if f.errors %}
-                <ul class="form-errors">
-                    {% for e in f.errors %}
-                    <li>{{ e }}</li>
-                    {% endfor %}
-                </ul>
-                {% endif %}
-            </div>
-            {% endfor %}
-            <button class="btn btn-primary" type="submit">Submit</button>
-        </form>
+            {% include "admin/login_form.html" %}
         {% endif %}
     </div>
 </div>
 {% endblock body %}
+

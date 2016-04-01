@@ -1,64 +1,80 @@
 from __future__ import absolute_import
 
 import os
+import io
 import os.path as op
-import datetime
 import sys
 import bcrypt
-import PIL
+import cStringIO
 from jinja2 import Markup
 from sqlalchemy import event
+from wtforms.form import Form
 from wtforms import TextAreaField, fields, HiddenField
-from wtforms.widgets import FileInput, TextArea, HTMLString, html_params
-from werkzeug.datastructures import FileStorage
+from wtforms.widgets import FileInput, TextArea
+from werkzeug.datastructures import FileStorage, ImmutableMultiDict
 from flask_admin import Admin, AdminIndexView, helpers, expose, form
+from flask_admin.helpers import get_form_data
 from flask_admin.model.form import InlineFormAdmin
-from flask import url_for, redirect, request, current_app, abort
+from flask import url_for, redirect, request, abort, flash
 from flask_admin.contrib.sqla import ModelView
 from flask_admin.contrib.sqla.fields import InlineModelFormList
 from flask_admin.contrib.sqla.form import InlineModelConverter
-
+from fields import AkkeriImageUploadField,\
+                     _thumbnail, cleaned_filename, day_subdir
 import flask_login
 
-from forms import LoginForm
-from akkeri.utils import slugify
-from akkeri.thumbnailer import Thumbnail
-from models import Image
 
+
+from forms import LoginForm, UserForm
+from models import Image, User
 # Used for admin model view class discovery
 current_module = sys.modules[__name__]
 
 
-def cleaned_filename(obj, file_data):
-    basename, ext = os.path.splitext(file_data.filename)
-    return slugify(basename) + ext
-
-
-def day_subdir(prefix_dir=None):
-    "Date-based subdir -- note the trailing slash"
-    td = datetime.date.today()
-    if prefix_dir:
-        return '%s/%04d/%02d/%02d/' % (prefix_dir, td.year, td.month, td.day)
-    else:
-        return '%04d/%02d/%02d/' % (td.year, td.month, td.day)
-
-
-def _thumbnail(image_path, size='140x105', crop=True):
-    if not image_path:
-        return ''
-    thumb = Thumbnail(None,
-                      static_folder=current_app.static_folder,
-                      static_url_path=current_app.static_url_path)
-    return thumb.thumbnail(image_path, size, crop)
-
-
 class AkkeriAdminIndexView(AdminIndexView):
     # AdminIndexView: Default view for /admin/ url
-    @expose('/')
+    def __init__(self, db, *args, **kwargs):
+        super(AkkeriAdminIndexView, self).__init__(*args, **kwargs)
+        self.db = db
+
+    def _base64_decode(self, s):
+        """Add missing padding to string and return the decoded base64 string."""
+        if not s:
+            return None
+
+        s = s[s.index(','):]
+        if not s:
+            return None
+        try:
+            return s.decode('base64')
+        except:
+            s += '=' * (-len(s) % 4)  # restore stripped '='
+            return s.decode('base64')
+
+    @expose('/', methods=('GET', 'POST'))
     def index(self):
         if not flask_login.current_user.is_authenticated:
             return redirect(url_for('.login_view'))
-        return super(AkkeriAdminIndexView, self).index()
+        flash_message = 'Your profile has been update :)'
+        decoded_data = self._base64_decode(request.form.get('image'))
+        if decoded_data:
+            try:
+                file_data = io.BytesIO(decoded_data)
+                file = FileStorage(file_data, filename='virtual.jpg')
+                request.files = ImmutableMultiDict([('image', file)])
+            except:
+                request.files = ImmutableMultiDict([])
+                flash_message = 'A problem came up with uploading the image. Please contact system administration'
+        user = flask_login.current_user
+        form = UserForm(get_form_data(), obj=user)
+
+        if request.method == 'POST' and form.validate():
+            form.populate_obj(user)
+            self.db.session.commit()
+            flash(flash_message)
+            return redirect(url_for('.index'))
+
+        return self.render('admin/index.html', form=form)
 
     @expose('/login/', methods=('GET', 'POST'))
     def login_view(self):
@@ -87,7 +103,6 @@ class AdminModelView(ModelView):
     # assigned roles for each user must intersect. Of course, superusers have
     # access to everything regardless of these role labels. The list of
     # relevant labels is different for many ModelView subclasses.
-
     FULL_ACCESS_ROLES = set(['group_editor'])
     PARTIAL_ACCESS_ROLES = set([
         'group_refugee', 'group_volunteer', 'group_oped'])
@@ -105,7 +120,7 @@ class AdminModelView(ModelView):
     FULL_ACCESS_COLUMNS = None
     PARTIAL_ACCESS_COLUMNS = None
 
-    edit_template = 'akkeri_edit.html'
+    edit_template = 'admin/model/akkeri_edit.html'
 
     def _create_or_edit_form(self, formtype, obj=None):
         if formtype == 'create':
@@ -140,7 +155,7 @@ class AdminModelView(ModelView):
         return flask_login.current_user.is_authenticated
 
     def inaccessible_callback(self, name, **kwargs):
-        return redirect(url_for('login', next=request.url))
+        return redirect(url_for('admin.login_view', next=request.url))
 
     def _access_check(self, full_check=False):
         user = flask_login.current_user
@@ -197,11 +212,10 @@ class AdminModelView(ModelView):
 
 
 class OptionalOwnerAdminModelView(AdminModelView):
+    pass
     """
     Used for admin model views with an Owner/Author field which is selectable
     by users with full access but not by those who have partial access.
-    """
-    """
     OWNER_FIELD_NAME = 'owner'
 
     def create_model(self, form):
@@ -219,85 +233,10 @@ class OptionalOwnerAdminModelView(AdminModelView):
             getattr(form, self.OWNER_FIELD_NAME).data \
                     = flask_login.current_user
 
-        super(OptionalOwnerAdminModelView, self).create_model(form)"""
-
-
-class UniqueUploadMixin(object):
-    """
-    Used for uploads of both attachments and images in order to ensure that
-    filenames are unique and no existing files are overwritten.
+        super(OptionalOwnerAdminModelView, self).create_model(form)
     """
 
-    def _ensure_unique(self, filename):
-        """
-        Causes the target file to be renamed if its filename clashes with a
-        preexisting one. Requires the derived class to support the _get_path()
-        method, either directly or indirectly.
-        """
-        path = self._get_path(filename)
-        orig_path = path
-        try_add = 0
-        while os.path.exists(path):
-            if try_add > 100:
-                raise ValueError('Image "%s" already exists' % filename)
-            else:
-                try_add += 1
-                base, ext = os.path.splitext(orig_path)
-                path = '%s--%d%s' % (base, try_add, ext)
-        if try_add:
-            base, ext = os.path.splitext(filename)
-            filename = '%s--%d%s' % (base, try_add, ext)
-        return filename
-
-
-class AkkeriFileUploadInput(form.FileUploadInput):
-    """
-    Once an attachment has been uploaded, we want the corresponding attachment
-    URL to be immutable. Hence we remove the Delete and Upload buttons from the
-    edit form. Instead, we show a link to the file itself for easy retrieval.
-    """
-
-    data_template = (
-            '<div class="akkeri-attachment-file-path">'
-            ' <a href="%(full_path)s" target="_blank">%(filename)s</a>'
-            '</div>')
-
-    def __call__(self, field, **kwargs):
-        kwargs.setdefault('id', field.id)
-        kwargs.setdefault('name', field.name)
-        template = self.data_template if field.data else self.empty_template
-        if field.data and isinstance(field.data, FileStorage):
-            value = field.data.filename
-        else:
-            value = field.data or ''
-        return HTMLString(template % {
-            'file': html_params(type='file', value=value, **kwargs),
-            'filename': value,
-            'full_path': os.path.join(
-                current_app.static_url_path,
-                current_app.config.get('ATTACHMENTS_SUBDIR', 'attachments'),
-                value)
-            })
-
-
-class AttachmentUploadField(form.FileUploadField, UniqueUploadMixin):
-    widget = AkkeriFileUploadInput()
-
-    def validate(self, form, extra_validators=None):
-        return True
-
-    def _save_file(self, data, filename):
-        filename = self._ensure_unique(filename)
-        return super(AttachmentUploadField, self)._save_file(data, filename)
-
-    @staticmethod
-    def base_path():
-        return os.path.join(
-            current_app.static_folder,
-            current_app.config.get(
-                'ATTACHMENTS_SUBDIR', 'attachments'))
-
-
+"""
 class AttachmentModelView(OptionalOwnerAdminModelView):
     FULL_ACCESS_ROLES = set(['group_editor', 'all_attachments'])
     PARTIAL_ACCESS_ROLES = set([
@@ -331,45 +270,7 @@ class AttachmentModelView(OptionalOwnerAdminModelView):
             namegen=cleaned_filename,
             allow_overwrite=False),
     }
-
-
-class AkkeriImageUploadInput(form.ImageUploadInput):
-    """
-    Once an image has been uploaded, we want the corresponding image URL to be
-    immutable. Hence we remove the Delete and Upload buttons from the edit
-    form. Also, we show a larger, proportionally scaled thumbnail than that
-    ordinarily provided by flask-admin.
-    """
-
-    data_template = (
-            '<div class="akkeri-image-thumbnail">'
-            ' <img %(image)s>'
-            '</div>')
-
-    def get_url(self, field):
-        filename = field.data
-        return _thumbnail(filename, '250x250', False)
-
-
-class AkkeriImageUploadField(form.ImageUploadField, UniqueUploadMixin):
-    widget = AkkeriImageUploadInput()
-    url_relative_path = 'images/'
-
-    def validate(self, form, extra_validators=None):
-        return True
-
-    def _save_file(self, data, filename):
-        filename = self._ensure_unique(filename)
-        if self.image is None:
-            self.image = PIL.Image.open(data)
-        return super(AkkeriImageUploadField, self)._save_file(data, filename)
-
-    @staticmethod
-    def base_path():
-        return os.path.join(
-            current_app.static_folder,
-            current_app.config.get(
-                'IMAGES_SUBDIR', 'images'))
+"""
 
 
 class ImageModelView(OptionalOwnerAdminModelView):
@@ -508,7 +409,7 @@ class PostModelView(OptionalOwnerAdminModelView):
 
     form_overrides = {
         'cover_image': AkkeriImageUploadField,
-        #'body': TMCETextAreaField,
+        # 'body': TMCETextAreaField,
     }
 
     def _tn(view, ctx, model, name):
@@ -570,7 +471,8 @@ class UserModelView(OnlyForFullAccessModelView):
     USER_ID_COLUMN = 'id'
 
     form_edit_rules = (
-            'username', 'email', 'fullname', 'user_location', 'active',
+            'roles', 'username', 'password', 'email', 'fullname',
+            'user_location', 'image', 'active',
             'show_profile', 'is_superuser')
     column_list = (
             'username', 'email', 'fullname', 'is_superuser', 'created')
@@ -616,7 +518,7 @@ def setup_admin(app, db, login_manager):
     import models
 
     admin = Admin(
-        app, name='Akkeri', index_view=AkkeriAdminIndexView(),
+        app, name='Akkeri', index_view=AkkeriAdminIndexView(name='Me', db=db),
         template_mode='bootstrap3', base_template="admin/my_base.html")
 
     for attr in dir(models):
