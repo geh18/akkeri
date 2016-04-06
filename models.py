@@ -28,12 +28,6 @@ import flask_login
 # These are the tables used for tagging attachments, images and posts.
 # Extra columns not represented (and not important): id, tagged_at.
 
-"""x_attachment_tag = db.Table(
-    'x_attachment_tag', db.metadata,
-    Column('attachment_id', Integer, ForeignKey('attachments.id')),
-    Column('tag_id', Integer, ForeignKey('tags.id'))
-)"""
-
 x_image_tag = db.Table(
     'x_image_tag', db.metadata,
     Column('image_id', Integer, ForeignKey('images.id')),
@@ -56,64 +50,6 @@ x_user_role = db.Table(
 
 
 # Model classes
-
-"""class Attachment(db.Model):
-    __tablename__ = 'attachments'
-
-    id = Column(Integer, primary_key=True, server_default=text(
-        "nextval('attachments_id_seq'::regclass)"))
-    owner_id = Column(
-        ForeignKey(u'users.id', ondelete=u'RESTRICT', onupdate=u'CASCADE'),
-        nullable=False, index=True)
-    attachment_path = Column(String, nullable=False, unique=True)
-    title = Column(String)
-    credit = Column(String)
-    caption = Column(Text)
-    bytes = Column(Integer, nullable=False, server_default=text("0"))
-    attachment_date = Column(DateTime)
-    # NOTE: preview_image + image are not currently used and are inaccessible
-    # in the admin
-    preview_image = Column(ForeignKey(
-        u'images.id', ondelete=u'SET NULL', onupdate=u'CASCADE'))
-    active = Column(Boolean, nullable=False, server_default=text("true"))
-    available_to_others = Column(
-        Boolean, nullable=False, server_default=text("false"))
-    added = Column(DateTime, index=True, server_default=text("now()"),
-                   default=datetime.datetime.now)
-    changed = Column(DateTime, server_default=text("now()"),
-                     default=datetime.datetime.now,
-                     onupdate=datetime.datetime.now)
-
-    owner = relationship(u'User')
-    posts = relationship('XPostAttachment', back_populates='attachment')
-    tags = relationship('Tag', secondary=x_attachment_tag,
-                        back_populates='attachments')
-
-    def __unicode__(self):
-        return self.attachment_path
-
-    def get_full_attachment_path(self):
-        try:
-            base_dir = current_app.static_folder
-            subdir = current_app.config.get(
-                'ATTACHMENTS_SUBDIR', 'attachments')
-        except RuntimeError:
-            base_dir = os.path.join(
-                os.path.dirname(os.path.realpath(__file__)), 'static')
-            subdir = 'attachments'
-        base_dir = os.path.join(base_dir, subdir)
-        return os.path.join(base_dir, self.attachment_path)
-
-
-@listens_for(Attachment, 'before_insert')
-def attachment_before_insert(mapper, connection, instance):
-    filename = instance.get_full_attachment_path()
-    if os.path.isfile(filename):
-        instance.bytes = os.path.getsize(filename)
-    else:
-        instance.bytes = 0"""
-
-
 class Featured(db.Model):
     __tablename__ = 'featured'
 
@@ -315,9 +251,6 @@ class Post(db.Model):
     post_display = relationship(u'PostDisplay')
 
     tags = relationship('Tag', secondary=x_post_tag, back_populates='posts')
-    """attachments = relationship(
-        'XPostAttachment', back_populates='post',
-        order_by=lambda: XPostAttachment.attachment_order)"""
 
     def __unicode__(self):
         return u'%s [%d]' % (self.title, self.id)
@@ -430,9 +363,6 @@ class Tag(db.Model):
                           back_populates='tags')
     posts = relationship('Post', secondary=x_post_tag, back_populates='tags')
 
-    """attachments = relationship(
-        'Attachment', secondary=x_attachment_tag, back_populates='tags')"""
-
     def __unicode__(self):
         return self.name
 
@@ -525,32 +455,6 @@ def user_before_insert(mapper, connection, instance):
     instance.set_password(instance.password)
 
 # Association models, with extra info attached to the link.
-
-"""class XPostAttachment(db.Model):
-    __tablename__ = 'x_post_attachment'
-
-    id = Column(Integer, primary_key=True, server_default=text(
-        "nextval('x_post_attachment_id_seq'::regclass)"))
-    post_id = Column(ForeignKey(u'posts.id', ondelete=u'CASCADE',
-                                onupdate=u'CASCADE'), nullable=False)
-    attachment_id = Column(
-        ForeignKey(
-            u'attachments.id', ondelete=u'CASCADE', onupdate=u'CASCADE'),
-        nullable=False)
-    attachment_order = Column(Integer, nullable=False,
-                              server_default=text("1"))
-    custom_title = Column(String)
-    custom_caption = Column(Text)
-    linked_at = Column(DateTime, server_default=text("now()"),
-                       default=datetime.datetime.now)
-
-    attachment = relationship(u'Attachment', back_populates='posts')
-    post = relationship(u'Post', back_populates='attachments')
-
-    def __unicode__(self):
-        return u'<XPostAttachment %d: %s for %s>' % (
-            self.id, self.attachment, self.post)"""
-
 
 """class XPostImage(db.Model):
     __tablename__ = 'x_post_image'
