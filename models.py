@@ -28,11 +28,11 @@ import flask_login
 # These are the tables used for tagging attachments, images and posts.
 # Extra columns not represented (and not important): id, tagged_at.
 
-x_attachment_tag = db.Table(
+"""x_attachment_tag = db.Table(
     'x_attachment_tag', db.metadata,
     Column('attachment_id', Integer, ForeignKey('attachments.id')),
     Column('tag_id', Integer, ForeignKey('tags.id'))
-)
+)"""
 
 x_image_tag = db.Table(
     'x_image_tag', db.metadata,
@@ -57,7 +57,7 @@ x_user_role = db.Table(
 
 # Model classes
 
-class Attachment(db.Model):
+"""class Attachment(db.Model):
     __tablename__ = 'attachments'
 
     id = Column(Integer, primary_key=True, server_default=text(
@@ -111,7 +111,7 @@ def attachment_before_insert(mapper, connection, instance):
     if os.path.isfile(filename):
         instance.bytes = os.path.getsize(filename)
     else:
-        instance.bytes = 0
+        instance.bytes = 0"""
 
 
 class Featured(db.Model):
@@ -315,16 +315,16 @@ class Post(db.Model):
     post_display = relationship(u'PostDisplay')
 
     tags = relationship('Tag', secondary=x_post_tag, back_populates='posts')
-    attachments = relationship(
+    """attachments = relationship(
         'XPostAttachment', back_populates='post',
-        order_by=lambda: XPostAttachment.attachment_order)
+        order_by=lambda: XPostAttachment.attachment_order)"""
 
     def __unicode__(self):
         return u'%s [%d]' % (self.title, self.id)
 
     @property
     def first_image(self):
-        return self.images[0] if self.images else None
+        return self.cover_image if self.cover_image else None
 
     def get_url(self):
         if self.post_type_id == self.PAGE_TYPE_ID:
@@ -430,8 +430,8 @@ class Tag(db.Model):
                           back_populates='tags')
     posts = relationship('Post', secondary=x_post_tag, back_populates='tags')
 
-    attachments = relationship(
-        'Attachment', secondary=x_attachment_tag, back_populates='tags')
+    """attachments = relationship(
+        'Attachment', secondary=x_attachment_tag, back_populates='tags')"""
 
     def __unicode__(self):
         return self.name
@@ -520,10 +520,13 @@ class User(db.Model):
             return 3  # article/oped
         return None
 
+@listens_for(User, 'before_update')
+def user_before_insert(mapper, connection, instance):
+    instance.set_password(instance.password)
 
 # Association models, with extra info attached to the link.
 
-class XPostAttachment(db.Model):
+"""class XPostAttachment(db.Model):
     __tablename__ = 'x_post_attachment'
 
     id = Column(Integer, primary_key=True, server_default=text(
@@ -546,7 +549,7 @@ class XPostAttachment(db.Model):
 
     def __unicode__(self):
         return u'<XPostAttachment %d: %s for %s>' % (
-            self.id, self.attachment, self.post)
+            self.id, self.attachment, self.post)"""
 
 
 """class XPostImage(db.Model):
