@@ -24,7 +24,7 @@
     <div>
         {% if current_user.is_authenticated %}
             {#<h2>{{ _gettext('Hi') }} {{ current_user.username }}</h2>#}
-            {#<p><a href="{{ url_for('admin.logout_view') }}">Logout</a></p>#}
+            <p><a href="{{ url_for('admin.logout_view') }}">Logout</a></p>
             <form method="POST" action="{{ url_for('admin.index') }}" enctype="multipart/form-data">
                 <div class="row">
                     <div class="col-sm-4">
@@ -49,3 +49,8 @@
 </div>
 {% endblock body %}
 
+{% block tail %}
+    {{ super() }}
+    <script src="{{url_for('static', filename='js/lib/croppie/croppie.js')}}"></script>
+    <script src="{{url_for('static', filename='js/upload_avatar.js')}}"></script>
+{% endblock %}

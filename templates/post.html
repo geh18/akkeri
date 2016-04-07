@@ -55,13 +55,12 @@
 
 
 {% macro the_article() %}
-    {% set img = post.first_image %}
 
-    {% if img %}
+    {% if post.cover_image %}
       <div class="image-wrapper">
-        <img src="{{ img.image_path | thumbnail('720x540', crop=True) }}"
+        <img src="{{ post.cover_image | thumbnail('720x540', crop=True) }}"
         class="main-image" />
-                <img src="/static/images/2016/01/14/portrait_thumb.jpg"
+                <img src="{{ post.author.image | thumbnail('150x150', crop=True) }}"
                 class="author-image">
       </div>
     {% endif %}

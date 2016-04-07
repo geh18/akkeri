@@ -66,7 +66,7 @@
 {% macro cover_post(post) %}
     <div class="cover-post shrinkin">
 			{% if post.first_image %}
-				<img src="{{ post.first_image.image_path | thumbnail('1200x610', crop=True) }}" class="image">
+				<img src="{{ post.first_image | thumbnail('1200x610', crop=True) }}" class="image">
 			{% else %}
 				<img src="/static/cache/tn/2015/11/12242089_10154509916183438_1006218838_n_720x540_1_80.jpg" class="image">
 			{% endif %}

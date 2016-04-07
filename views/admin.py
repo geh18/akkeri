@@ -396,9 +396,9 @@ class PostModelView(OptionalOwnerAdminModelView):
     PARTIAL_ACCESS_ROLES = set([
         'group_refugee', 'group_volunteer', 'group_oped', 'own_posts'])
     FULL_ACCESS_COLUMNS = (
-        'author', 'language', 'post_type', 'title', 'summary',
+        'cover_image', 'author', 'language', 'post_type', 'title', 'summary',
         'body', 'is_draft', 'published', 'post_display', 'author_visible',
-        'author_line', 'images', 'attachments', 'tags')
+        'author_line', 'images', 'tags')
     PARTIAL_ACCESS_COLUMNS = (
         'cover_image', 'title', 'body', 'location')
     USER_ID_COLUMN = 'author_id'
@@ -489,7 +489,7 @@ class TagModelView(AdminModelView):
     USER_ID_COLUMN = None
     FULL_ACCESS_COLUMNS = (
             'name', 'is_important', 'for_posts', 'for_images',
-            'for_attachments', 'posts', 'images', 'attachments')
+            'for_attachments', 'posts', 'images')
     PARTIAL_ACCESS_COLUMNS = ('name', )
 
 

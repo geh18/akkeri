@@ -274,18 +274,18 @@ def post_before_upd_ins(mapper, connection, instance):
     This def contains actions to be performed before inserting or updating a
     Post. It is called from post_before_insert and post_before_update.
     """
-    user = flask_login.current_user
+    # user = flask_login.current_user
     # if not user.getattr('id', None): # user = None
     # last_changed_by
-    if user and not instance.last_changed_by_user:
-        instance.last_changed_by_user = user
+    # if user and not instance.last_changed_by_user:
+    #    instance.last_changed_by_user = user
     # is_draft and published exclude each other
     if not instance.is_draft and instance.published is None:
         instance.published = datetime.datetime.now()
     elif instance.is_draft and instance.published:
         instance.published = None
     # guess post_type if missing:
-    if user and not instance.post_type:
+    if flask_login.current_user and not instance.post_type:
         instance.post_type_id = user.default_post_type_id()
     # automatic slug generation/update:
     slug = slugify(instance.title, fallback='without-title')
@@ -315,8 +315,6 @@ def post_before_upd_ins(mapper, connection, instance):
     # TODO: slug history table for URL permanence?
 
     # set author
-    instance.author = user
-    instance.author_id = user.id
 
 
 @listens_for(Post, 'before_insert')
