@@ -1,6 +1,7 @@
 from app import app, templated
-from flask import abort
+from flask import abort, request
 import models
+from manage import db
 
 
 @app.route('/')
@@ -80,3 +81,38 @@ def _get_posts():
     return p.query.\
         filter_by(is_draft=False).\
         filter(p.post_type_id.in_(p.POST_TYPE_IDS))
+
+
+@app.route('/modal_upload_image', methods=['GET', 'POST'])
+@templated('modal_upload_image.html')
+def modal_upload_image():
+    from forms import ImageWithPreviewForm
+    from flask_admin.helpers import get_form_data
+    from models import Image
+    from helpers import base64_decode
+    from werkzeug.datastructures import FileStorage, ImmutableMultiDict
+    import io
+    import flask_login
+
+    decoded_data = base64_decode(request.form.get('image_path'))
+    if decoded_data:
+        try:
+            file_data = io.BytesIO(decoded_data)
+            file = FileStorage(file_data, filename='virtual.jpg')
+            request.files = ImmutableMultiDict([('image_path', file)])
+        except:
+            request.files = ImmutableMultiDict([])
+
+    img = Image.query.filter_by(id=235).first()
+    form = ImageWithPreviewForm(get_form_data(), obj=img)
+
+    import pdb; pdb.set_trace()
+
+    if request.method == 'POST' and form.validate():
+        img.owner = flask_login.current_user
+        form.populate_obj(img)
+        import pdb; pdb.set_trace()
+        db.session.commit()
+
+    return dict(form=form)
+
