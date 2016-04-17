@@ -223,11 +223,11 @@ class Post(db.Model):
                             server_default=text("true"))
     author_line = Column(String)
     title = Column(String, nullable=True)
-    slug = Column(String, nullable=False, unique=True)
+    slug = Column(String, nullable=True, unique=True)
     is_draft = Column(Boolean, nullable=False, server_default=text("false"))
     summary = Column(Text)
-    cover_image = Column(String, nullable=False)
-    location = Column(String, nullable=False)
+    cover_image = Column(String, nullable=True)
+    location = Column(String, nullable=True)
     body = Column(Text)
     post_type_id = Column(ForeignKey(
         u'post_types.id', ondelete=u'SET NULL', onupdate=u'CASCADE'))
@@ -274,7 +274,7 @@ def post_before_upd_ins(mapper, connection, instance):
     This def contains actions to be performed before inserting or updating a
     Post. It is called from post_before_insert and post_before_update.
     """
-    # user = flask_login.current_user
+    user = flask_login.current_user
     # if not user.getattr('id', None): # user = None
     # last_changed_by
     # if user and not instance.last_changed_by_user:
@@ -315,6 +315,8 @@ def post_before_upd_ins(mapper, connection, instance):
     # TODO: slug history table for URL permanence?
 
     # set author
+    # instance.author = user
+    # instance.author_id = user.id
 
 
 @listens_for(Post, 'before_insert')
@@ -448,9 +450,10 @@ class User(db.Model):
             return 3  # article/oped
         return None
 
-@listens_for(User, 'before_update')
-def user_before_insert(mapper, connection, instance):
-    instance.set_password(instance.password)
+
+#@listens_for(User, 'before_update')
+#def user_before_insert(mapper, connection, instance):
+#    instance.set_password(instance.password)
 
 # Association models, with extra info attached to the link.
 

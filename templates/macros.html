@@ -5,17 +5,20 @@
 
     <div class="col-sm-6 post article-item-1">
      <div class="wrapper">
-        <img src="/static/images/2016/01/14/portrait_thumb.jpg" class="author-image">
+        <img src="{{ post.author.image|thumbnail('150x150', crop=True) }}" class="author-image">
         <div class="meta">
-            <span class="type"><i class="fa fa-newspaper-o"></i>{{ post.post_type.name_is }}</span>
+            {#<span class="type"><i class="fa fa-newspaper-o"></i>{{ post.post_type.name_is }}</span>#}
             <span class="author"><i class="fa fa-user"></i>{{ post.author.fullname }}</span>
-            <span class="date"><i class="fa fa-calendar"></i>{{
-            post.published| format_date }}</span>
+            {# <span class="date"><i class="fa fa-calendar"></i>
+            {{ post.published| format_date }}</span>#}
         </div>
         <a href="{{ post.get_url() }}" class="title">
             {{ post.title | safe }}
         </a>
-        <div class="teaser">{{ post.summary | safe }}</div>
+        <div class="teaser">
+            <img src="{{ post.first_image | thumbnail('88x88', crop=True)}}" class="image"> 
+            {{ post.summary | safe }}
+        </div>
       </div>
     </div>
 {% endmacro %}
@@ -28,24 +31,20 @@
     <div class="row post {{ css }}">
       <div class="wrapper">
         <div class="col-sm-6 image">
-          {% set img = post.first_image %}
-          {% if img %}
-          <img src="{{ img.image_path| thumbnail('590x315', crop=True) }}"
-          class="article-image">
-          {% endif %}
+          <img src="{{ post.first_image | thumbnail('590x315', crop=True) }}" class="article-image">
         </div>
 
         <div class="col-sm-6 content">
             <div class="meta">
-                <span class="type"><i class="fa fa-newspaper-o"></i>{{ post.post_type.name_is }}</span>
+                {#<span class="type"><i class="fa fa-newspaper-o"></i>{{ post.post_type.name_is }}</span>#}
                 <span class="author"><i class="fa fa-user"></i>{{ post.author.fullname }}</span>
-                <span class="date"><i class="fa fa-calendar"></i>{{
-                post.published|format_date }}</span>
+                {#<span class="date"><i class="fa fa-calendar"></i>{{
+                post.published|format_date }}</span>#}
             </div>
             <a href="{{ post.get_url() }}" class="title">
                 {{ post.title | safe }}
             </a>
-            <img src="{{ img.image_path | thumbnail('110x110', crop=True) }}"
+            <img src="{{ post.first_image | thumbnail('110x110', crop=True) }}"
                 class="image-sm">
             <div class="teaser">{{ post.summary | safe }}</div>
         </div>
@@ -100,7 +99,7 @@
 
 {% macro footer() %}
     <div class="footer shrinkin">
-        <a href="#" class="sticky">Um Akkeri</a>
+        <a href="/page/270_spurt-og-svarad/" class="sticky">Spurt og Svarað</a>
         <div class="content row facebook">
             <div class="col-sm-6 text-center">
                 <div style="width: 100%; overflow: hidden" class="fb-page"

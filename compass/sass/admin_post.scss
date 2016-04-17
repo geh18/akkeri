@@ -74,7 +74,7 @@ input, textarea {
 }
 
 .form-group {
-    textarea, input[type="text"], input[type="file"]  {
+    textarea, div.cedit, input[type="text"], input[type="file"]  {
         border-radius: 0px;
         box-shadow: none;
         border: none;
@@ -113,5 +113,13 @@ label {
            height: 316px;
            font-size: 19px;
         }
+    }
+}
+
+
+.cedit {
+    img{
+        max-width: 50%;
+        display: block;
     }
 }

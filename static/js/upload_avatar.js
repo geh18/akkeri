@@ -17,7 +17,6 @@ $(window).ready(function(){
             reader.readAsDataURL(input.files[0]);
 
             reader.onloadend = function(e){
-                console.log('comes here');
                 var min_zoom = $uploadCrop.find('input[type="range"]').attr('min');
                 $uploadCrop.croppie('setZoom', parseFloat(min_zoom));
             }

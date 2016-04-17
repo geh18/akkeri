@@ -1,22 +1,26 @@
-<h1>Login</h1>
-<p class="lead">
-Please login to the Akkeri admin system.
-</p>
-<form class="login-form" method="POST" action="">
-    {{ form.hidden_tag() if form.hidden_tag }}
-    {% for f in form if f.type != 'CSRFTokenField' %}
-    <div>
-        {{ f.label(class_="label-"+f.name) }}
-        {{ f(class_="input-"+f.name) }}
-        {% if f.errors %}
-        <ul class="form-errors">
-            {% for e in f.errors %}
-            <li>{{ e }}</li>
-            {% endfor %}
-        </ul>
-        {% endif %}
-    </div>
-    {% endfor %}
-    <button class="btn btn-primary" type="submit">Submit</button>
-</form>
 
+<div class="login-page-wrapper">
+    <a href="/" class="logo animated fadeInDown">Akkeri</a>
+    <form class="login-form animated fadeInDown" method="POST" action="">
+        {{ form.hidden_tag() if form.hidden_tag }}
+        {% for f in form if f.type != 'CSRFTokenField' %}
+        <div>
+            {{ f(class_="input-"+f.name, placeholder=f.name) }}
+            {% if f.errors %}
+            <ul class="form-errors">
+                {% for e in f.errors %}
+                <li>{{ e }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+        {% endfor %}
+        <button class="btn btn-primary login" type="submit">Submit</button>
+    </form>
+    <img src="{{ '2016/04/17/qnuip4m3ls5r2yej810dvkzxb.jpg' | thumbnail('1700x', crop=True) }}" class="bg-login-img">
+</div>
+
+{% block tail %}
+    {{super}}
+    <link rel="stylesheet" href="{{url_for('static', filename='css/admin_login.css')}}"></link>
+{% endblock %}

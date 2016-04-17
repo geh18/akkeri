@@ -7,7 +7,10 @@ from akkeri.thumbnailer import Thumbnail
 from flask import current_app
 import datetime
 from akkeri.utils import slugify
-
+from wtforms.widgets import HTMLString, html_params
+from wtforms.fields import TextAreaField
+from cgi import escape
+from wtforms.compat import text_type
 
 def cleaned_filename(obj, file_data):
     basename, ext = os.path.splitext(file_data.filename)
@@ -62,6 +65,22 @@ def _thumbnail(image_path, size='140x105', crop=True):
     return thumb.thumbnail(image_path, size, crop)
 
 
+class EditableContentInput(object):
+
+    def __call__(self, field, **kwargs):
+        html = """
+            <div contenteditable="true" class="cedit">%(text)s</div>
+            <textarea class="hidden cedit" %(params)s >%(text)s</textarea>
+        """
+
+        kwargs.setdefault('id', field.id)
+
+        return HTMLString(html % {
+            'params': html_params(name=field.name, **kwargs),
+            'text': text_type(field._value())
+        })
+
+
 class AkkeriImageUploadInput(form.ImageUploadInput):
     """
     Once an image has been uploaded, we want the corresponding image URL to be
@@ -72,7 +91,7 @@ class AkkeriImageUploadInput(form.ImageUploadInput):
 
     data_template = (
             '<div class="akkeri-image-thumbnail">'
-            ' <img %(image)s>'
+            ' <img %(image)s accept="image/*">'
             '</div>')
 
     def get_url(self, field):
@@ -85,7 +104,7 @@ class AkkeriUserImageUploadInput(AkkeriImageUploadInput):
         <div id="crop-avatar" class="hidden"></div>
         <div class="fileUpload btn btn-primary">
             <span>Upload</span>
-            <input type="file" accept="image/*" id="image" class="upload">
+     ble0       <input type="file" accept="image/*" id="image" class="upload">
         </div>
         <input type="button" class="btn btn-primary cancel-upload" value="Cancel">
         <input type="hidden" id="base64" name="image">
@@ -106,11 +125,20 @@ class AkkeriUserImageUploadInput(AkkeriImageUploadInput):
             <div class="image-wrapper">
                 <img %(image)s class="uploaded-image">
                 <div class="delete-image" 
-                     data-toggle="modal" 
+                     data-toggle="modal"
                      data-target="#admin-modal"
-                     data-modal="delete-image">x</div>
+                     data-url="delete-image">x</div>
             </div>
     """ + croppie + """                
+        </div>
+    """
+
+class ImageUploadWithPreviewInput(AkkeriImageUploadInput):
+   empty_template = """
+        <div class="image-with-upload">
+            <input type="file" accept="image/*" id="select-image" class="upload">
+            <div class="preview"><img src="" style="max-width: 100%% "></div>
+            <input type="hidden" name="image" val="" class="base64">
         </div>
     """
 
@@ -134,8 +162,16 @@ class AkkeriImageUploadField(form.ImageUploadField, UniqueUploadMixin):
             current_app.config.get(
                 'IMAGES_SUBDIR', 'images'))
 
+class ImageUploadWithPreviewField(AkkeriImageUploadField):
+    widget = ImageUploadWithPreviewInput()
+
+
 class AkkeriUserImageUploadField(AkkeriImageUploadField):
     widget = AkkeriUserImageUploadInput()
+
+
+class AkkeriEditorField(TextAreaField):
+    widget = EditableContentInput()
 
 
 """

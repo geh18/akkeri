@@ -1,8 +1,9 @@
 $(window).ready(function(){
     $('#admin-modal').on('show.bs.modal', function (event) {
-        var src_btn = $(event.relatedTarget);
-        var recipient = src_btn.data('modal');
-        var modal = $(this);
+        var src_btn = $(event.relatedTarget),
+            recipient = src_btn.data('modal'),
+            url = src_btn.data('url'),
+            modal = $(this);
 
         if (recipient == 'delete-image') {
             modal.find('.modal-title').text('Delete Image');
@@ -10,6 +11,17 @@ $(window).ready(function(){
             var confirm_btn = modal.find('.confirm-btn');
             confirm_btn.text('Delete');
             deleteImage(src_btn, confirm_btn);
+        }
+
+        if (url) {
+           $.ajax({
+                url: url,
+                type: 'GET',
+                dataType: 'html'
+           })
+           .success(function(data){
+                modal.find('.modal-body').html(data);        
+           });
         }
     }); 
 
@@ -21,6 +33,9 @@ $(window).ready(function(){
             console.log('form + ' + form);
             form.submit();
         });
-    } 
- 
+    }
+
+    function uploadImageToArticle(){
+        i
+    }
 });

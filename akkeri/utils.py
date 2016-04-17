@@ -21,5 +21,7 @@ def slugify(s, fallback=u'no-slug'):
 
 def unescape_entities(html):
     "Converts HTML entities (both named and numeric) to Unicode."
+    if not html:
+        return ''
     h = HTMLParser.HTMLParser()
     return h.unescape(html)

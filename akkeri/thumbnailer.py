@@ -69,7 +69,9 @@ class Thumbnail(object):
 
           <img src="{{ i.image_path | thumbnail('100x100', crop=True) }}">
         """
-        width, height = [int(x) for x in size.split('x')]
+        width, height = [
+            int(x) if x else '' for x in size.split('x')
+        ]
         subdir = ''
         if img_path.find('/') > -1:
             subdir, filename = os.path.split(img_path)
@@ -88,6 +90,12 @@ class Thumbnail(object):
         try:
             image = Image.open(orig_fn)
             dim = (width, height)
+            if not height:
+                o_width = image.size[0]
+                o_height = image.size[1]
+                p = o_height / float(o_width)
+                dim = (width, int(width*p))
+                
             if crop:
                 img = ImageOps.fit(image, dim, Image.ANTIALIAS)
             else:

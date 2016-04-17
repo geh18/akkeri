@@ -19,10 +19,11 @@ from flask import url_for, redirect, request, abort, flash
 from flask_admin.contrib.sqla import ModelView
 from flask_admin.contrib.sqla.fields import InlineModelFormList
 from flask_admin.contrib.sqla.form import InlineModelConverter
-from fields import AkkeriImageUploadField,\
-                     _thumbnail, cleaned_filename, day_subdir
+from fields import (AkkeriImageUploadField, AkkeriEditorField, 
+    _thumbnail, cleaned_filename, day_subdir)
 import flask_login
 
+from helpers import (base64_decode)
 
 
 from forms import LoginForm, UserForm
@@ -37,26 +38,12 @@ class AkkeriAdminIndexView(AdminIndexView):
         super(AkkeriAdminIndexView, self).__init__(*args, **kwargs)
         self.db = db
 
-    def _base64_decode(self, s):
-        """Add missing padding to string and return the decoded base64 string."""
-        if not s:
-            return None
-
-        s = s[s.index(','):]
-        if not s:
-            return None
-        try:
-            return s.decode('base64')
-        except:
-            s += '=' * (-len(s) % 4)  # restore stripped '='
-            return s.decode('base64')
-
     @expose('/', methods=('GET', 'POST'))
     def index(self):
         if not flask_login.current_user.is_authenticated:
             return redirect(url_for('.login_view'))
         flash_message = 'Your profile has been update :)'
-        decoded_data = self._base64_decode(request.form.get('image'))
+        decoded_data = base64_decode(request.form.get('image'))
         if decoded_data:
             try:
                 file_data = io.BytesIO(decoded_data)
@@ -410,6 +397,7 @@ class PostModelView(OptionalOwnerAdminModelView):
     form_overrides = {
         'cover_image': AkkeriImageUploadField,
         # 'body': TMCETextAreaField,
+        'body': AkkeriEditorField
     }
 
     def _tn(view, ctx, model, name):

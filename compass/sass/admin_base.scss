@@ -1,3 +1,5 @@
+@import 'shared';
+
 body {
     padding: 0px;
     background-color: #f1f1f1;
@@ -90,4 +92,9 @@ input[type='checkbox'] {
 
 .croppie-container {
     padding: 0px;
+}
+
+.cedit {
+    white-space: pre-wrap;
+    padding: 10px;
 }

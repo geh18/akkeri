@@ -15,6 +15,9 @@
     @media (min-width: 1200px) {
         width: 1180px;
     }
+    &.post-page {
+        overflow: hidden; 
+    }
 }
 
 .article-list {
@@ -36,10 +39,6 @@
         position: absolute;
         width: 100%;
         bottom: 0px;
-        background: -moz-linear-gradient(top, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 100%);
-        background: -webkit-linear-gradient(top, rgba(255,255,255,0) 0%,rgba(255,255,255,1) 100%);
-        background: linear-gradient(to bottom, rgba(255,255,255,0) 0%,rgba(255,255,255,1) 100%);
-        filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00ffffff', endColorstr='#ffffff',GradientType=0 );
     }
 }
 .cover-post {
@@ -50,7 +49,6 @@
 
     .image {
         width: 100%;
-        min-width: 410px;
     }
     .info {
         width: 100%;
@@ -87,7 +85,7 @@
     }
     .teaser {
         margin-bottom: 20px;
-        height: 50px;
+        height: 60px;
         overflow: hidden;
     }
     .meta {
@@ -136,6 +134,12 @@
     border-right: 0px;
     padding: 0px;
     height: 321px;
+
+    .teaser .image{
+        width: 88px;
+        float: right;
+        margin-left: 10px;
+    }
 }
 
 .footer {
@@ -157,8 +161,8 @@
         position: absolute;
         top: 0px;
         right: 51px;
-        color: $gold-color;
-        border: 1px solid $gold-color;
+        color: #d0b852;
+        border-bottom: 4px solid #d0b852;
         border-top: none;
         border-bottom-right-radius: 3px;
         border-bottom-left-radius: 3px;
@@ -178,6 +182,8 @@
    width: 64px;
    float: left;
    margin-right: 15px;
+    -webkit-filter: grayscale(60%);
+    filter: grayscale(60%);
 }
 
 .post {
@@ -293,7 +299,7 @@
         overflow: hidden;
         margin-bottom: 10px;
         padding-top: 28px;
-        font-size: 11px;
+        font-size: 13px;
      }
     .item:after {
          background: -moz-linear-gradient(top, rgba(255,255,255,0) 0%, rgba(25,38,54,1) 100%);
@@ -326,6 +332,7 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00ffffff', e
     background-color: $akkeri-blue;
     padding: 0px;
 
+
     .wrapper {
         position: relative;
         top: 10px;
@@ -334,15 +341,16 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00ffffff', e
         border-top-right-radius: $border-radius;
     }
     .article-body {
-        padding: 15px;
-
-        padding: 0 47px;
-        @media (max-width: $scr-sm) {
-            padding: 0 30px;
-        }
+        padding: 0 30px;
+    }
+    .title {
+        font-family: Georgia, Times, 'Times New Roman', serif;
+        font-size: 33px;
+        margin-bottom: 90px;
     }
     .image-wrapper {
         position: relative;
+        background-color: #192636;
         .author-image {
             position: absolute;
             bottom: -26px;
@@ -356,7 +364,35 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00ffffff', e
         }
     }
     .post-content {
-        max-width: 600px;
+        max-width: 100%;
+        font-size: 16px;
+        @media (min-width: 992px) {
+            white-space: pre-wrap;
+            -webkit-column-count: 2; /* Chrome, Safari, Opera */
+            -moz-column-count: 2; /* Firefox */
+            column-count: 2;
+            -webkit-column-gap: 40px;
+            -moz-column-gap: 40px;
+            column-gap: 52px;
+        }
+        h1 {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        img {
+            max-width: 100%;
+            margin: 15px 0px;
+        }
+    }
+    .article-body.page {
+        .post-content {
+            @media (min-width: 992px) {
+                white-space: pre-wrap;
+                -webkit-column-count: 1; /* Chrome, Safari, Opera */
+                -moz-column-count: 1; /* Firefox */
+                column-count: 1;
+            }
+        }
     }
     .meta {
         text-align: center;
@@ -367,10 +403,15 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00ffffff', e
             margin-right: 8px;
         }
         span {
-            margin-right: 25px;
             font-size: 15px;
             font-weight: bold;
         }
+    }
+    @media (max-width: $scr-sm) {
+        .article-body {
+            padding: 15px;
+        }
+        float: none;
     }
 }
 .nav-bar.xs {

@@ -2,10 +2,8 @@ from wtforms import form, fields
 from wtforms.validators import ValidationError
 from wtforms import validators as val
 import models
-from fields import AkkeriImageUploadField,\
-                    AkkeriUserImageUploadField,\
-                    day_subdir,\
-                    cleaned_filename
+from fields import (AkkeriImageUploadField, AkkeriUserImageUploadField,
+    ImageUploadWithPreviewField, day_subdir, cleaned_filename)
 import imghdr
 from flask_admin.form import ImageUploadField
 
@@ -23,7 +21,7 @@ def picture_validation(form, field):
 class LoginForm(form.Form):
     login = fields.TextField(validators=[val.required()])
     password = fields.PasswordField(validators=[val.required()])
-
+    
     def validate_login(self, field):
         user = self.get_user()
         if user is None:
@@ -44,6 +42,17 @@ class UserForm(form.Form):
     email = fields.StringField(u'Email', validators=[val.required()])
     user_location = fields.StringField(u"Your location", validators=[val.required()])
     image = AkkeriUserImageUploadField(
+                label='Image',
+                base_path=AkkeriImageUploadField.base_path,
+                url_relative_path=AkkeriImageUploadField.url_relative_path,
+                relative_path=day_subdir(),
+                namegen=cleaned_filename,
+                allow_overwrite=False,
+                thumbnail_size=(100, 100, True))
+
+
+class ImageWithPreviewForm(form.Form):
+    image_path= ImageUploadWithPreviewField(
                 label='Image',
                 base_path=AkkeriImageUploadField.base_path,
                 url_relative_path=AkkeriImageUploadField.url_relative_path,

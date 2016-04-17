@@ -1,22 +1,10 @@
 {% extends "admin/master.html" %}
+{% from "_formhelpers.html" import render_field %}
 
 {% block head_css %}
     <link rel="stylesheet" href="{{url_for('static', filename='js/lib/croppie/croppie.css')}}"></link>
     {{ super() }}
 {% endblock %}
-
-{% macro render_field(field) %}
-  <dt>{{ field.label }}
-  <dd>{{ field(**kwargs)|safe }}
-  {% if field.errors %}
-    <ul class=errors>
-    {% for error in field.errors %}
-      <li>{{ error }}</li>
-    {% endfor %}
-    </ul>
-  {% endif %}
-  </dd>
-{% endmacro %}
 
 {% block body %}
 {{ super() }}

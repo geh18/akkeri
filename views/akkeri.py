@@ -1,5 +1,5 @@
 from app import app, templated
-from flask import abort, request
+from flask import abort, request, jsonify
 import models
 from manage import db
 
@@ -13,10 +13,11 @@ def index():
 
     posts = _get_posts().all()
     
-    for key in featured:
-        a = _get_by_display(posts, featured[key])
-        if a:
-            posts = _switch_places(posts, a, key)
+    if len(posts) > 6:
+        for key in featured:
+            a = _get_by_display(posts, featured[key])
+            if a:
+                posts = _switch_places(posts, a, key)
     
     return locals()
 
@@ -25,7 +26,7 @@ def index():
 @templated('post.html')
 def post(slug):
     post = _get_post(models.Post.POST_TYPE_IDS, slug)
-    side_posts = _get_posts().filter(models.Post.id!=post.id)
+    side_posts = _get_posts().filter(models.Post.id!=post.id)[:6]
     p = models.Post
     pages = p.query.\
                 filter_by(is_draft=False).\
@@ -38,7 +39,8 @@ def post(slug):
 @templated('page.html')
 def page(slug):
     post = _get_post(models.Post.PAGE_TYPE_ID, slug)
-    return dict(post=post)
+    side_posts = _get_posts().filter(models.Post.id!=post.id)[:6]
+    return dict(post=post, side_posts=side_posts)
 
 
 @app.route('/profile/<path:slug>/')
@@ -93,6 +95,10 @@ def modal_upload_image():
     from werkzeug.datastructures import FileStorage, ImmutableMultiDict
     import io
     import flask_login
+    from models import Post
+    from app import thumb
+
+    resp = {}
 
     decoded_data = base64_decode(request.form.get('image_path'))
     if decoded_data:
@@ -103,16 +109,29 @@ def modal_upload_image():
         except:
             request.files = ImmutableMultiDict([])
 
-    img = Image.query.filter_by(id=235).first()
-    form = ImageWithPreviewForm(get_form_data(), obj=img)
-
-    import pdb; pdb.set_trace()
+    form = ImageWithPreviewForm(get_form_data(), obj=Image)
 
     if request.method == 'POST' and form.validate():
-        img.owner = flask_login.current_user
-        form.populate_obj(img)
-        import pdb; pdb.set_trace()
-        db.session.commit()
+        postid = request.form.get('postid')
+        if postid is None:
+            post = Post(author=flask_login.current_user, title='')
+            db.session.add(post)
+            db.session.commit()
+            postid = post.id
+            resp['new'] = True
+            resp['postid'] = postid
 
-    return dict(form=form)
+        img = Image(owner=flask_login.current_user, post_id=postid)
+        db.session.add(img)
+        db.session.commit()
+        form.populate_obj(img)
+        db.session.commit()
+        resp['img_path'] = thumb.thumbnail(img.image_path, '400x400', crop=True)
+        resp['img_id'] = img.id
+
+        return jsonify(**resp)
+
+    resp['form'] = form
+
+    return resp
 

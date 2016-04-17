@@ -1,0 +1,80 @@
+@import 'shared';
+@import 'animations';
+
+.bg-login-img {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+}
+
+.navbar {
+    z-index: -2;
+}
+
+.login-form {
+    background: rgba(0,0,0,0.4);
+    color: white;
+    padding: 41px;
+    width: 100%;
+    position: absolute;
+    left: 0; 
+}
+
+input:-webkit-autofill, textarea:-webkit-autofill, select:-webkit-autofill{
+    background-color: #fff;
+}
+
+button.login {
+    margin-top: 24px;
+    background-color: $akkeri-blue;
+    background-image: none;
+    color: $gold-color;
+    border: none;
+    font-size: 17px;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:active,
+input:-webkit-autofill:focus {
+    background-color: #FFFFFF !important;
+    color: #555 !important;
+    -webkit-box-shadow: 0 0 0 1000px white inset !important;
+    -webkit-text-fill-color: #555555 !important;
+    }
+input {
+border: none;
+    margin: 3px 0;
+    padding: 7px;
+    color: black;
+    font-size: 19px;
+    background: transparent;
+    color: white;
+    border-bottom: 2px solid white;
+}
+
+/* Change the white to any color ;) */
+input:-webkit-autofill {
+    -webkit-box-shadow: none;
+    box-shadow: none;
+    -webkit-text-fill-background-color: white !important;
+    text-fill-background-color: white !important;
+    background-color: #FFFFFF !important;
+    
+}
+
+.logo {
+    color: #fff;
+    background-color: $akkeri-blue;
+    font-size: 30px;
+    font-weight: bold;
+    border-radius: 50%;
+    height: 100px;
+    width: 100px;
+    text-align: center;
+    line-height: 100px;
+    display: block;
+}
