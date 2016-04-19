@@ -1,7 +1,12 @@
 {% extends  "base.html" %}
 {% import "macros.html" as fp %}
 
-
+{% block metas %}
+    <meta property="og:title" content="">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="{{ request.url }}">
+    <meta property="og:image" content="http://{{ request.headers['host'] }}{{ post.first_image | thumbnail('500x', crop=True)}}">
+{% endblock %}
 {% block title %}{{ post.post_type.name_is }}: {{ post.title |safe }}{% endblock %}
 
 {% block content %}

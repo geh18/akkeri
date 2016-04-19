@@ -91,7 +91,8 @@ class AkkeriImageUploadInput(form.ImageUploadInput):
 
     data_template = (
             '<div class="akkeri-image-thumbnail">'
-            ' <img %(image)s accept="image/*">'
+            ' <img %(image)s>'
+            ' <input %(file)s>'
             '</div>')
 
     def get_url(self, field):

@@ -194,6 +194,7 @@
     .teaser {
         clear: left;
         margin-top: 22px;
+        font-size: 16px;
     }
     .meta {
         position: relative;
@@ -343,10 +344,10 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00ffffff', e
     .article-body {
         padding: 0 30px;
     }
-    .title {
+    h2 {
         font-family: Georgia, Times, 'Times New Roman', serif;
-        font-size: 33px;
-        margin-bottom: 90px;
+        font-size: 40px;
+        margin-bottom: 50px;
     }
     .image-wrapper {
         position: relative;
@@ -364,7 +365,7 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00ffffff', e
         }
     }
     .post-content {
-        max-width: 100%;
+        max-width: 720px;
         font-size: 16px;
         @media (min-width: 992px) {
             white-space: pre-wrap;
@@ -374,6 +375,7 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00ffffff', e
             -webkit-column-gap: 40px;
             -moz-column-gap: 40px;
             column-gap: 52px;
+            text-align: justify;
         }
         h1 {
             font-size: 20px;

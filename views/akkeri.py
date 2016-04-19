@@ -126,7 +126,7 @@ def modal_upload_image():
         db.session.commit()
         form.populate_obj(img)
         db.session.commit()
-        resp['img_path'] = thumb.thumbnail(img.image_path, '400x400', crop=True)
+        resp['img_path'] = thumb.thumbnail(img.image_path, '400x', crop=False)
         resp['img_id'] = img.id
 
         return jsonify(**resp)
