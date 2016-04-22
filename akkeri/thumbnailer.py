@@ -69,6 +69,8 @@ class Thumbnail(object):
 
           <img src="{{ i.image_path | thumbnail('100x100', crop=True) }}">
         """
+        if not img_path:
+            return None
         width, height = [
             int(x) if x else '' for x in size.split('x')
         ]
