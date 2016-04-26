@@ -94,9 +94,7 @@
 
         <h2>{{ post.title | safe }}</h2>
 
-        <div class="post-content">
-            {{ post.body |safe }}
-        </div>
+        <div class="post-content">{{ post.body |safe }}</div>
 
         <div class="fb-like" data-href="{{ request.url }}"
         data-layout="standard" data-action="like" data-show-faces="true"
