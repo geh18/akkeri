@@ -2,7 +2,7 @@
                 css_class='teaser', with_date=True, heading_level=3) %}
 
   {% set img = post.first_image %}
-
+    <!-- article_item_1 -->
     <div class="col-sm-6 post article-item-1">
      <div class="wrapper">
         <img src="{{ post.author.image|thumbnail('150x150', crop=True) }}" class="author-image">
@@ -27,7 +27,7 @@
 
 {% macro article_item_2(post, thumb_size='120x120', thumb_crop=True,
                 css='article-item-2', with_date=True, heading_level=3) %}
-
+    <!-- article_item_2 -->
     <div class="row post {{ css }}">
       <div class="wrapper">
         <div class="col-sm-6 image">
@@ -44,9 +44,11 @@
             <a href="{{ post.get_url() }}" class="title">
                 {{ post.title | safe }}
             </a>
+            <div class="teaser">
             <img src="{{ post.first_image | thumbnail('110x110', crop=True) }}"
                 class="image-sm">
-            <div class="teaser">{{ post.summary | safe }}</div>
+                {{ post.summary | safe }}
+            </div>
         </div>
       </div>
     </div>
@@ -63,6 +65,7 @@
 {% endmacro %}
 
 {% macro cover_post(post) %}
+    <!-- cover post -->
     <div class="cover-post shrinkin">
 			{% if post.first_image %}
 				<img src="{{ post.first_image | thumbnail('1200x610', crop=True) }}" class="image">
