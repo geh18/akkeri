@@ -2,6 +2,7 @@ from app import app, templated
 from flask import abort, request, jsonify
 import models
 from manage import db
+from sqlalchemy import desc
 
 
 @app.route('/')
@@ -26,7 +27,7 @@ def index():
 @templated('post.html')
 def post(slug):
     post = _get_post(models.Post.POST_TYPE_IDS, slug)
-    side_posts = _get_posts().filter(models.Post.id!=post.id)[:6]
+    side_posts = _get_posts().filter(models.Post.id!=post.id)[:8]
     p = models.Post
     pages = p.query.\
                 filter_by(is_draft=False).\
@@ -82,7 +83,8 @@ def _get_posts():
     p = models.Post
     return p.query.\
         filter_by(is_draft=False).\
-        filter(p.post_type_id.in_(p.POST_TYPE_IDS))
+        filter(p.post_type_id.in_(p.POST_TYPE_IDS)).\
+        order_by(desc(models.Post.published))
 
 
 @app.route('/modal_upload_image', methods=['GET', 'POST'])
