@@ -17,6 +17,12 @@
     }
     &.post-page {
         overflow: hidden; 
+        background-color: $akkeri-blue;
+        .post-content-wrapper {
+            overflow: hidden;
+            border-bottom: 2px solid #FFFFFF;
+            padding-bottom: 60px;
+        }
     }
 }
 
@@ -162,6 +168,7 @@
 .footer {
     position: relative;
     background-color: $akkeri-blue;
+    padding: 40px 0px;
     .content {
         padding: 20px;
     }
@@ -218,6 +225,8 @@
         font-size: 16px;
         height: 100%;
         overflow: hidden;
+        font-size: 1.1em;
+        line-height: 1.9em; 
     }
     .meta {
         position: relative;
@@ -242,11 +251,7 @@
     position: absolute;
     width: 100%;
     bottom: 0px;
-    background: -moz-linear-gradient(top, rgba(255, 255, 255, 0) 0%, white 100%);
-    background: -webkit-linear-gradient(top, rgba(255, 255, 255, 0) 0%, white 100%);
-    background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 16%, white 87%);
-    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00ffffff', endColorstr='#ffffff',GradientType=0 );
-    border-bottom: 10px solid white; 
+    border-bottom: 30px solid white; 
 }
 
 .post.article-item-1 {
@@ -339,7 +344,7 @@
         overflow: hidden;
         margin-bottom: 10px;
         padding-top: 28px;
-        font-size: 13px;
+        font-size: 1em;
      }
     .item:after {
          background: -moz-linear-gradient(top, rgba(255,255,255,0) 0%, rgba(25,38,54,1) 100%);
@@ -358,12 +363,15 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00ffffff', e
     .title{
         font-size: 22px;
         color: white;
+        font-weight: 600;
+        line-height: 21px;
     }
     .author {
         color: $gold-color;
+        line-height: 19px;
     }
     .teaser {
-        color: white;
+        color: #E6E6E6;
     }
 }
 
@@ -372,7 +380,6 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00ffffff', e
     background-color: $akkeri-blue;
     padding: 0px;
 
-
     .wrapper {
         position: relative;
         top: 10px;
@@ -380,12 +387,12 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00ffffff', e
         border-top-left-radius: 20px;
     }
     .article-body {
-        padding: 0 30px;
+        padding: 0px 30px 95px 30px;
     }
     h2 {
-        font-family: Georgia, Times, 'Times New Roman', serif;
         font-size: 40px;
         margin-bottom: 50px;
+        font-weight: bold;
     }
     .image-wrapper {
         position: relative;
@@ -394,7 +401,8 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00ffffff', e
             position: absolute;
             bottom: -26px;
             border: 3px solid white;
-            left: 48%;
+            left: 50%;
+            margin-left: -30px;
         }
         .main-image {
             width: 100%;
@@ -404,6 +412,8 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00ffffff', e
     .post-content {
         max-width: 720px;
         font-size: 16px;
+        line-height: 30px;
+        font-size: 1.2em;
         @media (min-width: 992px) {
             white-space: pre-wrap;
             -webkit-column-count: 2; /* Chrome, Safari, Opera */
@@ -443,7 +453,6 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00ffffff', e
         }
         span {
             font-size: 15px;
-            font-weight: bold;
         }
     }
     @media (max-width: $scr-sm - 1) {

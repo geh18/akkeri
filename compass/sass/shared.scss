@@ -16,14 +16,21 @@ $scr-sm: 768px;
 $scr-md: 992px;
 $scr-lg: 1200px;
 
+$primary-font: 'Droid Sans', Helvetica, Arial, sans-serif;
+$secondary-font: 'Droid Serif', Georgia, Times, serif;
 
 body {
     background-color: $body-color;
-    font-size: 14px;
+    font-family: $primary-font;
 }
 
 p {
   font-size: 1.2em;
+}
+
+h2 {
+    font-family: $secondary-font;    
+    font-weight: 600;
 }
 
 i {
@@ -63,7 +70,7 @@ i {
 }
 
 .title {
-    font-family: 'Merriweather', serif;
+    font-family: $secondary-font;
 }
 
 .text-right { text-align: right; }
