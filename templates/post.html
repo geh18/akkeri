@@ -86,6 +86,9 @@
                     <span class="date"><i class="fa fa-calendar"></i>{{
                     post.published|format_date }} </span>
                 {% endif %}
+                <div class="fb-wrapper mt-10">
+                    <div class="fb-like" data-href="{{ request.url }}" data-layout="button" data-action="like" data-show-faces="true" data-share="true" style="margin: 0px;"></div>
+                </div>
             </div>
         {% else %}
     <div class="article-body page">       
