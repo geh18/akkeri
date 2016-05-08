@@ -434,7 +434,7 @@ class PostModelView(OptionalOwnerAdminModelView):
     column_formatters = {'cover_image': _tn}
     form_args = {
         'cover_image': dict(
-            label='Cover Image',
+            label=u'Aðal Mynd',
             base_path=AkkeriImageUploadField.base_path,
             url_relative_path=AkkeriImageUploadField.url_relative_path,
             relative_path=day_subdir(),
@@ -443,7 +443,6 @@ class PostModelView(OptionalOwnerAdminModelView):
             thumbnail_size=(100, 100, True)),
         'body': dict(label='Texti'),
         'title': dict(label='Titill greinar'),
-        'cover_image': dict(label=u'Aðal mynd'),
         'location': dict(label=u'Staðsetning höfundar (borg)'),
         'images': dict(label='Myndir')
     }
