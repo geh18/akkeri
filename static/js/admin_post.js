@@ -190,15 +190,23 @@ $(function() {
             'imageDragging': {}
         },
         paste: {
-            cleanPastedHTML: true,
+            cleanPastedHTML: false,
+            forcePlainText: false,
             cleanAttrs: ['style', 'dir'],
             cleanTags: ['label', 'meta']
         },
         toolbar: {
-            buttons: ['h1', 'anchor', 'quote', 'image'],
+            buttons: ['h1', 'anchor', 'quote'],
             diffLeft: 25,
             diffTop: 10,
         },
+    });
+
+    $('.cedit').mediumInsert({
+        editor: editor,
+        addons: {
+            images: false
+        }
     });
 });
 

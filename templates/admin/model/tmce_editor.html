@@ -28,14 +28,22 @@
     <link rel="stylesheet" href="{{url_for('static', filename='css/admin_post.css')}}"></link>
     <link rel="stylesheet" href="{{ url_for('static', filename='js/lib/medium_editor/css/medium-editor.min.css') }}"></link>
     <link rel="stylesheet" href="{{ url_for('static', filename='js/lib/medium_editor/css/themes/tim.css') }}"></link>
+    <link rel="stylesheet" href="{{ url_for('static', filename='js/lib/medium_editor/medium-editor-insert-plugin-2.3.2/dist/css/medium-editor-insert-plugin.css') }}"></link>
+    <link rel="stylesheet" href="{{ url_for('static', filename='js/lib/medium_editor/medium-editor-insert-plugin-2.3.2/dist/css/medium-editor-insert-plugin-frontend.css') }}"></link>
 {% endblock %}
 
 
 {% block tail %}
   {{ super() }}
   <script src="{{url_for('static', filename='js/lib/medium_editor/medium-editor.js')}}"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.5/handlebars.runtime.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-sortable/0.9.13/jquery-sortable-min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/blueimp-file-upload/9.12.1/js/jquery.iframe-transport.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/blueimp-file-upload/9.12.1/js/jquery.fileupload.js"></script>
   <script type="text/javascript" src="//cdn.tinymce.com/4/tinymce.min.js"></script>
   <script type="text/javascript" src="{{ url_for('static', filename='js/admin_post.js') }}"></script>
+  <script src="{{url_for('static', filename='js/lib/medium_editor/medium-editor-insert-plugin-2.3.2/dist/js/medium-editor-insert-plugin.js')}}"></script>
   <script type="text/javascript" src="{{ url_for('static', filename='js/akkeri_editor_field.js') }}"></script>
   <script type="text/javascript" src="{{ url_for('static', filename='js/admin_modal.js') }}"></script>
 {% endblock %}

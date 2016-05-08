@@ -415,10 +415,9 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00ffffff', e
         line-height: 30px;
         font-size: 1.2em;
         @media (min-width: 992px) {
-            white-space: pre-wrap;
-            -webkit-column-count: 2; /* Chrome, Safari, Opera */
-            -moz-column-count: 2; /* Firefox */
-            column-count: 2;
+            -webkit-column-count: 1; /* Chrome, Safari, Opera */
+            -moz-column-count: 1; /* Firefox */
+            column-count: 1;
             -webkit-column-gap: 40px;
             -moz-column-gap: 40px;
             column-gap: 52px;
@@ -437,20 +436,16 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00ffffff', e
             padding: 0px 8px;
             margin: 0 0 20px;
             border-left: 5px solid $gold-color;
-            margin-left: -18px;
+            margin: 15px 0px 15px 10px;
             font-family: $secondary-font; 
             color: #353535;
             font-style: italic;
-        }
-        @media (max-width: $scr-sm - 1) {
-            blockquote { margin: 15px 0px 15px 10px; } 
         }
         p { font-size: initial; }
     }
     .article-body.page {
         .post-content {
             @media (min-width: 992px) {
-                white-space: pre-wrap;
                 -webkit-column-count: 1; /* Chrome, Safari, Opera */
                 -moz-column-count: 1; /* Firefox */
                 column-count: 1;

@@ -1,10 +1,10 @@
 ;(function($){
     $(function(){
-        var image = $('<button>', {'class': 'btn image',
+        var image = $('<button>', {'class': 'btn btn-default btn-danger image',
                                    'data-toggle': 'modal',                 
                                    'data-target': '#admin-modal',
                                    'data-url': '/modal_upload_image'}).text('Bæta við mynd');
-        var $cedit = $('div.cedit');
+        var $cedit = $('div.cedit').first();
 
         $cedit.before(image);
        
