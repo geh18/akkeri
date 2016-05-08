@@ -1,3 +1,9 @@
+@import "shared";
+
+body {
+    background-color: #f1f1f1;
+}
+
 #images-button {
     width: 100%;
 }
@@ -122,4 +128,19 @@ label {
         max-width: 50%;
         display: block;
     }
+
+    blockquote {
+        padding: 0px 8px;
+        margin: 0 0 20px;
+        font-size: 1.1em;
+        border-left: 5px solid $gold-color;
+        font-family: $secondary-font;
+        color: #353535;
+        font-style: italic;
+    }
+    h1 {
+        font-size: 23px;
+        font-weight: bold;
+    }
+
 }

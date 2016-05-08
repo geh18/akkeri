@@ -1,3 +1,4 @@
+# encoding=utf-8
 import PIL
 import os
 import random
@@ -101,13 +102,13 @@ class AkkeriImageUploadInput(form.ImageUploadInput):
 
 
 class AkkeriUserImageUploadInput(AkkeriImageUploadInput):
-    croppie = """
+    croppie = u"""
         <div id="crop-avatar" class="hidden"></div>
         <div class="fileUpload btn btn-primary">
-            <span>Upload</span>
-     ble0       <input type="file" accept="image/*" id="image" class="upload">
+            <span>Velja mynd</span>
+            <input type="file" accept="image/*" id="image" class="upload">
         </div>
-        <input type="button" class="btn btn-primary cancel-upload" value="Cancel">
+        <input type="button" class="btn btn-primary cancel-upload" value="Hætta við">
         <input type="hidden" id="base64" name="image">
         <input type="checkbox" name="%(marker)s" class="hidden">
     """

@@ -26,11 +26,14 @@
 {% block head_css %}
     {{ super() }}
     <link rel="stylesheet" href="{{url_for('static', filename='css/admin_post.css')}}"></link>
+    <link rel="stylesheet" href="{{ url_for('static', filename='js/lib/medium_editor/css/medium-editor.min.css') }}"></link>
+    <link rel="stylesheet" href="{{ url_for('static', filename='js/lib/medium_editor/css/themes/tim.css') }}"></link>
 {% endblock %}
 
 
 {% block tail %}
   {{ super() }}
+  <script src="{{url_for('static', filename='js/lib/medium_editor/medium-editor.js')}}"></script>
   <script type="text/javascript" src="//cdn.tinymce.com/4/tinymce.min.js"></script>
   <script type="text/javascript" src="{{ url_for('static', filename='js/admin_post.js') }}"></script>
   <script type="text/javascript" src="{{ url_for('static', filename='js/akkeri_editor_field.js') }}"></script>

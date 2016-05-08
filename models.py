@@ -285,8 +285,10 @@ def post_before_upd_ins(mapper, connection, instance):
     elif instance.is_draft and instance.published:
         instance.published = None
     # guess post_type if missing:
-    if flask_login.current_user and not instance.post_type:
+    if user and user.is_authenticated and not instance.post_type:
         instance.post_type_id = user.default_post_type_id()
+    else:
+        instance.post_type_id = 3
     # automatic slug generation/update:
     slug = slugify(instance.title, fallback='without-title')
     if len(slug) > 36:
@@ -315,8 +317,13 @@ def post_before_upd_ins(mapper, connection, instance):
     # TODO: slug history table for URL permanence?
 
     # set author
-    # instance.author = user
-    # instance.author_id = user.id
+    if user.is_authenticated:
+        instance.author = user
+        instance.author_id = user.id
+    else:
+        user = User.query.filter_by(id=7).one_or_none()
+        instance.author = user
+        instance.author_id = user.id
 
 
 @listens_for(Post, 'before_insert')

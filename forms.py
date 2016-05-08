@@ -1,3 +1,4 @@
+# encoding=utf-8
 from wtforms import form, fields
 from wtforms.validators import ValidationError
 from wtforms import validators as val
@@ -38,9 +39,9 @@ class LoginForm(form.Form):
 
 
 class UserForm(form.Form):
-    fullname = fields.StringField(u'Full name', validators=[val.required()])
-    email = fields.StringField(u'Email', validators=[val.required()])
-    user_location = fields.StringField(u"Your location", validators=[val.required()])
+    fullname = fields.StringField(u'Fullt nafn', validators=[val.required()])
+    email = fields.StringField(u'Netfang', validators=[val.required()])
+    user_location = fields.StringField(u"Þín staðsetning", validators=[val.required()])
     image = AkkeriUserImageUploadField(
                 label='Image',
                 base_path=AkkeriImageUploadField.base_path,

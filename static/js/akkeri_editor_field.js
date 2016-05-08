@@ -1,24 +1,13 @@
 ;(function($){
     $(function(){
-        var h2 = $('<button>', {'class': 'btn h2'}).text('Title');
         var image = $('<button>', {'class': 'btn image',
                                    'data-toggle': 'modal',                 
                                    'data-target': '#admin-modal',
-                                   'data-url': '/modal_upload_image'}).text('Image');
+                                   'data-url': '/modal_upload_image'}).text('Bæta við mynd');
         var $cedit = $('div.cedit');
 
-        $cedit.before(h2);
         $cedit.before(image);
        
-       h2.click(function(e) {
-            e.preventDefault();
-            var html = $cedit.html();
-            document.execCommand('formatBlock', false, 'h1');
-            if(html == $cedit.html()) {
-                document.execCommand('formatBlock', false, 'div');
-            }
-        });
-
         function placeCaretAtEnd(el) {
             el.focus();
             if (typeof window.getSelection != "undefined"

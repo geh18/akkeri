@@ -431,7 +431,21 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00ffffff', e
         img {
             max-width: 100%;
             margin: 15px 0px;
+            display: block;
         }
+        blockquote {
+            padding: 0px 8px;
+            margin: 0 0 20px;
+            border-left: 5px solid $gold-color;
+            margin-left: -18px;
+            font-family: $secondary-font; 
+            color: #353535;
+            font-style: italic;
+        }
+        @media (max-width: $scr-sm - 1) {
+            blockquote { margin: 15px 0px 15px 10px; } 
+        }
+        p { font-size: initial; }
     }
     .article-body.page {
         .post-content {

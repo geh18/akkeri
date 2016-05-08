@@ -1,3 +1,4 @@
+# encoding=utf-8
 from __future__ import absolute_import
 
 import os
@@ -198,6 +199,33 @@ class AdminModelView(ModelView):
         return self._apply_partial_filter(query)
 
 
+class HiddenWithoutFullAccessModelView(AdminModelView):
+    """
+    Inherit from this in order to hide the menu item without making it
+    impossible for the ordinary logged-in user to access the page.
+    """
+    USER_ID_COLUMN = None
+
+    def is_visible(self):
+        return self.with_full_access
+
+
+class OnlyForFullAccessModelView(HiddenWithoutFullAccessModelView):
+    """
+    Inherit from this in order to limit access to superusers and editors.
+    """
+    def is_accessible(self):
+        return flask_login.current_user.is_authenticated \
+            and self.with_full_access
+
+    def inaccessible_callback(self, name, **kwargs):
+        if flask_login.current_user.is_authenticated:
+            # Logged in, but without full rights: Forbidden
+            return abort(403)
+        # Not logged in: Redirect to login page.
+        return redirect(url_for('login', next=request.url))
+
+
 class OptionalOwnerAdminModelView(AdminModelView):
     pass
     """
@@ -260,7 +288,7 @@ class AttachmentModelView(OptionalOwnerAdminModelView):
 """
 
 
-class ImageModelView(OptionalOwnerAdminModelView):
+class ImageModelView(OnlyForFullAccessModelView):
     FULL_ACCESS_ROLES = set(['group_editor', 'all_images'])
     PARTIAL_ACCESS_ROLES = set([
         'group_refugee', 'group_volunteer', 'group_oped', 'own_images'])
@@ -377,7 +405,7 @@ class ImageInline(InlineFormAdmin):
 
 
 class PostModelView(OptionalOwnerAdminModelView):
-    name = 'Write'
+    name = 'Skrifa'
     column_searchable_list = ('title', 'author.fullname')
     FULL_ACCESS_ROLES = set(['group_editor', 'all_posts'])
     PARTIAL_ACCESS_ROLES = set([
@@ -406,13 +434,18 @@ class PostModelView(OptionalOwnerAdminModelView):
     column_formatters = {'cover_image': _tn}
     form_args = {
         'cover_image': dict(
-            label='Article Image',
+            label='Cover Image',
             base_path=AkkeriImageUploadField.base_path,
             url_relative_path=AkkeriImageUploadField.url_relative_path,
             relative_path=day_subdir(),
             namegen=cleaned_filename,
             allow_overwrite=False,
             thumbnail_size=(100, 100, True)),
+        'body': dict(label='Texti'),
+        'title': dict(label='Titill greinar'),
+        'cover_image': dict(label=u'Aðal mynd'),
+        'location': dict(label=u'Staðsetning höfundar (borg)'),
+        'images': dict(label='Myndir')
     }
 
     inline_model_form_converter = CustomInlineModelConverter
@@ -420,33 +453,6 @@ class PostModelView(OptionalOwnerAdminModelView):
 
     create_template = 'admin/model/tmce_editor.html'
     edit_template = create_template
-
-
-class HiddenWithoutFullAccessModelView(AdminModelView):
-    """
-    Inherit from this in order to hide the menu item without making it
-    impossible for the ordinary logged-in user to access the page.
-    """
-    USER_ID_COLUMN = None
-
-    def is_visible(self):
-        return self.with_full_access
-
-
-class OnlyForFullAccessModelView(HiddenWithoutFullAccessModelView):
-    """
-    Inherit from this in order to limit access to superusers and editors.
-    """
-    def is_accessible(self):
-        return flask_login.current_user.is_authenticated \
-            and self.with_full_access
-
-    def inaccessible_callback(self, name, **kwargs):
-        if flask_login.current_user.is_authenticated:
-            # Logged in, but without full rights: Forbidden
-            return abort(403)
-        # Not logged in: Redirect to login page.
-        return redirect(url_for('login', next=request.url))
 
 
 class UserModelView(OnlyForFullAccessModelView):
@@ -473,7 +479,7 @@ class UserModelView(OnlyForFullAccessModelView):
         super(UserModelView, self).create_model(form)
 
 
-class TagModelView(AdminModelView):
+class TagModelView(OnlyForFullAccessModelView):
     USER_ID_COLUMN = None
     FULL_ACCESS_COLUMNS = (
             'name', 'is_important', 'for_posts', 'for_images',
@@ -506,7 +512,7 @@ def setup_admin(app, db, login_manager):
     import models
 
     admin = Admin(
-        app, name='Akkeri', index_view=AkkeriAdminIndexView(name='Me', db=db),
+        app, name='Akkeri', index_view=AkkeriAdminIndexView(name=u'Ég', db=db),
         template_mode='bootstrap3', base_template="admin/my_base.html")
 
     for attr in dir(models):
@@ -523,3 +529,5 @@ def setup_admin(app, db, login_manager):
         if hasattr(model, '__bases__') and db.Model in model.__bases__:
             admin.add_view(model_view_class(model, db.session, **extra))
     return admin
+
+

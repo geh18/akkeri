@@ -154,7 +154,6 @@ $(function() {
     }
     function init () {
         var text = document.getElementById('body');
-        console.log(text);
         function resize () {
             text.style.height = 'auto';
             text.style.height = text.scrollHeight+'px';
@@ -175,4 +174,32 @@ $(function() {
     }
 
     init();
+
+    var editor = new MediumEditor('.cedit', {
+        placeholder: false,
+        anchor: {
+            customClassOption: null,
+            customClassOptionText: 'Button',
+            linkValidation: true,
+            placeholderText: 'Type your link',
+            targetCheckbox: true,
+            targetCheckboxText: 'Opna í nýjum glugga'
+        },
+        autoLink: true,
+        extensions: {
+            'imageDragging': {}
+        },
+        paste: {
+            cleanPastedHTML: true,
+            cleanAttrs: ['style', 'dir'],
+            cleanTags: ['label', 'meta']
+        },
+        toolbar: {
+            buttons: ['h1', 'anchor', 'quote', 'image'],
+            diffLeft: 25,
+            diffTop: 10,
+        },
+    });
 });
+
+
