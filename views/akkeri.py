@@ -27,6 +27,7 @@ def index():
 @templated('post.html')
 def post(slug):
     post = _get_post(models.Post.POST_TYPE_IDS, slug)
+    
     side_posts = _get_posts().filter(models.Post.id!=post.id)[:8]
     p = models.Post
     pages = p.query.\
@@ -128,7 +129,7 @@ def modal_upload_image():
         db.session.commit()
         form.populate_obj(img)
         db.session.commit()
-        resp['img_path'] = thumb.thumbnail(img.image_path, '400x', crop=False)
+        resp['img_path'] = thumb.thumbnail(img.image_path, '720x', crop=False)
         resp['img_id'] = img.id
 
         return jsonify(**resp)
