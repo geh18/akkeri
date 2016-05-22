@@ -8,7 +8,7 @@
     <meta property="og:url" content="{{ request.url }}">
     <meta property="og:image" content="http://{{ request.headers['host'] }}{{ post.first_image | thumbnail('500x', crop=True)}}">
 {% endblock %}
-{% block title %}{{ post.post_type.name_is }}: {{ post.title |safe }}{% endblock %}
+{% block title %}{{ post.title |safe }}{% endblock %}
 
 {% block content %}
 <div class="container post-page">
