@@ -317,10 +317,10 @@ def post_before_upd_ins(mapper, connection, instance):
     # TODO: slug history table for URL permanence?
 
     # set author
-    if user.is_authenticated:
+    if user.is_authenticated and not instance.author:
         instance.author = user
         instance.author_id = user.id
-    else:
+    elif not user.is_authenticated and not instance.author:
         user = User.query.filter_by(id=7).one_or_none()
         instance.author = user
         instance.author_id = user.id
