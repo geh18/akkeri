@@ -66,7 +66,7 @@
       <div class="image-wrapper">
         <img src="{{ post.cover_image | thumbnail('720x', crop=True) }}"
         class="main-image" />
-        {% if not post.author_visible  %}
+        {% if post.author_visible  %}
             <img src="{{ post.author.image | thumbnail('150x150', crop=True) }}"
             class="author-image">
         {% endif %}
@@ -74,7 +74,7 @@
     {% endif %}
         {% if not post.post_type_id == 5 %}
     <div class="article-body">
-            {% if not post.author_visible %}
+            {% if post.author_visible %}
             <div class="meta">
                 <span class="name"><i class="fa fa-user"></i>{{
                 post.author.fullname }}</span>
