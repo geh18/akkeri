@@ -59,7 +59,6 @@ def facebook_authorized(resp):
     image = facebook.get('/me/picture?redirect=false&width=300')
 
     petition = models.Petition.query.filter_by(is_active=True).one_or_none()
-
     message = ""
     
     try:
@@ -71,9 +70,9 @@ def facebook_authorized(resp):
         sign.fb_image = image.data['data']['url']
         db.session.add(sign)
         db.session.commit()
-        message = u'Kærar þakkir fyrir þinn stuðning %s.' % me.data['name'].split(' ')[0]
-    except:
-        message = u'Villa kom upp. Hefurðu skrifað undir áður?'
+        message = u'Kærar þakkir fyrir þinn stuðning %s.' % me.data['niame'].split(' ')[0]
+    except Exception, e:
+        message = u'Villa kom upp. Hefurðu skrifað undir áður? %s' % e
         
     flash(message)
 

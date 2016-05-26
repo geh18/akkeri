@@ -214,10 +214,11 @@ class Petition(db.Model):
     title = Column(String, nullable=True)
     description = Column(Text)
     is_active = Column(Boolean, nullable=False, server_default=text("false"))
+    active_until = Column(DateTime, index=True)
+    published = Column(DateTime, index=True)
     with_facebook = Column(Boolean, nullable=False, server_default=text("true"), default=True)
     added = Column(DateTime, index=True, server_default=text("now()"),
                     default=datetime.datetime.now)
-    published = Column(DateTime, index=True)
 
     author = relationship(u'User', primaryjoin='Petition.created_by == User.id')
     
