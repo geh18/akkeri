@@ -204,6 +204,55 @@ class PostDisplay(db.Model):
         return u'%s' % self.label
 
 
+class Petition(db.Model):
+    __tablename__ = 'petitions'
+
+    id = Column(Integer, primary_key=True)
+    created_by = Column(
+        ForeignKey(u'users.id', ondelete=u'RESTRICT', onupdate=u'CASCADE'),
+        nullable=False, index=True)
+    title = Column(String, nullable=True)
+    description = Column(Text)
+    is_active = Column(Boolean, nullable=False, server_default=text("false"))
+    with_facebook = Column(Boolean, nullable=False, server_default=text("true"), default=True)
+    added = Column(DateTime, index=True, server_default=text("now()"),
+                    default=datetime.datetime.now)
+    published = Column(DateTime, index=True)
+
+    author = relationship(u'User', primaryjoin='Petition.created_by == User.id')
+    
+    def __unicode__(self):
+        return u'%s' % self.title
+
+
+@listens_for(Petition, 'before_insert')
+def petition_before_update(mapper, connection, instance):
+    instance.created_by = flask_login.current_user.id
+
+
+class PetitionSignature(db.Model):
+    __tablename__ = 'petition_signatures'
+
+    id = Column(Integer, primary_key=True)
+    petition_id = Column(
+        ForeignKey(u'petitions.id', ondelete=u'RESTRICT', onupdate=u'CASCADE'),
+        nullable=False, index=True)
+    fb_id = Column(String, unique=True)
+    fb_name = Column(String)
+    fb_email = Column(String)
+    fb_image = Column(String)
+    is_anononymous = Column(Boolean, nullable=False, server_default=text('false'))
+    added = Column(DateTime, index=True, server_default=text("now()"),
+                    default=datetime.datetime.now)
+
+    petition = relationship(
+        u'Petition', primaryjoin='PetitionSignature.petition_id == Petition.id'
+    )
+
+    def __unicode__(self):
+        return u'%s' % self.fb_name
+
+
 class Post(db.Model):
     __tablename__ = 'posts'
 
