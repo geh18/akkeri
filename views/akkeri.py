@@ -1,9 +1,95 @@
+# encoding=utf-8
 from app import app, templated
-from flask import abort, request, jsonify
+from flask import abort, request, jsonify, url_for, session, redirect, flash
 import models
 from manage import db
 from sqlalchemy import desc
+try:
+    from flask_oauth import OAuth
+except:
+    pass
 
+oauth = OAuth()
+
+# akkerii
+FB_APP_ID = "1107231556015325"
+FB_APP_SECRET = "cc6950ea34d6097c045a73edb1164c89"
+# test
+#FB_APP_ID = "579371655445760"
+#FB_APP_SECRET = "c0e6128362a6711322686199cbd37257"
+
+
+try:
+    facebook = oauth.remote_app(                                                    
+        'facebook',                                                                 
+        base_url='https://graph.facebook.com/',                                     
+        request_token_url=None,                                                     
+        access_token_url='/oauth/access_token',                                     
+        authorize_url='https://www.facebook.com/dialog/oauth',                      
+        consumer_key=FB_APP_ID,                                            
+        consumer_secret=FB_APP_SECRET,                                     
+        request_token_params={'scope': 'email'}                                     
+    )
+except:
+    pass
+
+
+@app.route('/login')                                                       
+def login():                                                                    
+    return facebook.authorize(callback=url_for(                                 
+        'facebook_authorized',                                        
+        next=request.args.get('next') or request.referrer or None,              
+        _external=True)                                                         
+    )                                                                           
+                                                                                
+                                                                                
+@app.route('/login/authorized')                                            
+@facebook.authorized_handler                                                    
+def facebook_authorized(resp):                                                  
+    if resp is None:                                                            
+        return 'Access denied: reason=%s error=%s' % (                          
+            request.args['error_reason'],                                       
+            request.args['error_description']                                   
+        )
+
+    session['oauth_token'] = (resp['access_token'], '')                         
+    session['logged_in'] = True                                                                    
+                                                                                
+    me = facebook.get('/me')                                                    
+    image = facebook.get('/me/picture?redirect=false&width=300')
+
+    petition = models.Petition.query.filter_by(is_active=True).one_or_none()
+
+    message = ""
+    
+    try:
+        sign = models.PetitionSignature()
+        sign.petition_id = petition.id
+        sign.fb_id = me.data['id']
+        sign.fb_name = me.data['name']
+        sign.fb_email = me.data['email']
+        sign.fb_image = image.data['data']['url']
+        db.session.add(sign)
+        db.session.commit()
+        message = u'Kærar þakkir fyrir þinn stuðning %s.' % me.data['name'].split(' ')[0]
+    except:
+        message = u'Villa kom upp. Hefurðu skrifað undir áður?'
+        
+    flash(message)
+
+    return redirect(url_for('petition'))
+
+
+@facebook.tokengetter                                                           
+def get_facebook_oauth_token():                                                 
+    return session.get('oauth_token')
+
+
+@app.route('/logout')                                                      
+def logout():                                                                   
+    session.pop('logged_in', None)                                              
+    session.pop('oauth_token', None)
+                                            
 
 @app.route('/')
 @templated('index.html')
@@ -19,6 +105,20 @@ def index():
             a = _get_by_display(posts, featured[key])
             if a:
                 posts = _switch_places(posts, a, key)
+    
+    return locals()
+
+
+@app.route('/petition/')
+@templated('petition.html')
+def petition():
+    side_posts = _get_posts()[:10]
+
+    petition = models.Petition.query.filter_by(is_active=True).one_or_none()
+
+    signatures = models.PetitionSignature.query.filter_by(petition=petition).all()
+
+    count = len(signatures)
     
     return locals()
 

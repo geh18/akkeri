@@ -1,0 +1,29 @@
+
+{% macro menu() %}
+   <div class="nav-bar hidden-xs">
+        <a href="/" class="logo">Akkeri</a>
+        <!--<div class="menu-items">
+            <h4>SÖGUR</h4>
+            <h4>GREINAR</h4>
+            <h4>FRÉTTIR</h4>
+            <h4>UPPLÝSINGAR</h4>
+        </div>-->
+   </div>
+{% endmacro %}
+
+
+{% macro suggested_posts(side_posts) %}
+    {% for post in side_posts %}
+        <div class="item teaser">
+            <a class="title" href="{{ post.get_url() }}">
+                {{ post.title | safe }}
+            </a>
+            <img src="{{ post.author.image|thumbnail('150x150', crop=True) }}"
+            class="author-image">
+            <h5 class="author"><i class="fa fa-user"></i>
+                {{ post.author.fullname }}
+            </h5>
+            <div class="teaser">{{ post.summary | safe }}</div>
+        </div>
+    {% endfor %}
+{% endmacro %}

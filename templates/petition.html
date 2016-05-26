@@ -1,0 +1,78 @@
+{% extends  "base.html" %}
+{% import "macros.html" as fp %}
+{% from "single_post.html" import menu, suggested_posts %}
+
+{% block metas %}
+    <meta property="fb:app_id" content="1107231556015325" />
+    <meta property="og:title" content="{{ petition.title|safe }}">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="{{ request.url }}">
+    <meta property="og:image" content="https://scontent-lhr3-1.xx.fbcdn.net/v/t1.0-9/13139044_1102344373140598_5986964614796846707_n.jpg?oh=e3c976c8c4424255ee2302f00eb9ae4b&oe=57CC8435">
+{% endblock %}
+{% block title %}{{ petition.title |safe }}{% endblock %}
+
+
+{% block content %}
+<div class="container post-page">
+  <div class="post-content-wrapper">
+    <div class="col-sm-8 col-md-9 article right">
+       <div class="nav-bar xs visible-xs">
+            <a href="/" class="logo">Akkeri</a>
+       </div>
+        <div class="wrapper">
+           <div class="image-wrapper">
+                <img src="https://scontent-lhr3-1.xx.fbcdn.net/v/t1.0-9/13139044_1102344373140598_5986964614796846707_n.jpg?oh=e3c976c8c4424255ee2302f00eb9ae4b&oe=57CC8435" class="main-image">
+            </div>
+            <div class="article-body">
+                {% with messages = get_flashed_messages() %}
+                  {% if messages %}
+                      <p class="alert alert-success mt-15">{{ messages[0] }}</p>
+                  {% endif %}
+                {% endwith %}
+
+                <h1>{{ petition.title }}</h2>
+                <p>{{ petition.description }} </p>
+                <a href="/login" class="sign-button"> Ég styð framtakið! </a>
+
+                <div class="fb-like" data-href="{{ request.url }}"
+        data-layout="standard" data-action="like" data-show-faces="true"
+        data-share="true"></div>                
+
+                <h3 class="mb-15" style="margin-bottom: 30px;">{{ count }} Hafa lagt málinu lið núþegar </h3>
+                {% for sign in signatures %}
+                    <div class="row mt-15">
+                         <div class="col-xs-2"> 
+                             <img src="{{ sign.fb_image }}" style="width: 70%;">
+                         </div>
+                         <div class="col-xs-10"> {{ sign.fb_name }} </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-4 col-md-3 side-bar left">
+        {{ menu() }}
+        {{ suggested_posts(side_posts) }}
+    </div>
+ </div>
+{{ fp.footer() }}
+</div>
+
+<style type="text/css">
+    .sign-button {
+        width: 100%;
+        text-align: center;
+        display: block;
+        padding: 30px;
+        background: #243E5C;
+        color: #D0B852;
+        font-size: 23px;
+        margin: 55px 0;
+        margin-bottom: -10px;
+    }
+    .sign-button:hover {
+        color: #D0B852;
+    }
+</style>
+{% endblock %}
