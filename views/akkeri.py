@@ -71,7 +71,7 @@ def facebook_authorized(resp):
         db.session.commit()
         message = u'Kærar þakkir fyrir þinn stuðning %s.' % me.data['name'].split(' ')[0]
     except Exception, e:
-        message = u'Villa kom upp. Hefurðu skrifað undir áður? %s'
+        message = u'Villa kom upp. Hefurðu skrifað undir áður?' 
         
     flash(message)
 
