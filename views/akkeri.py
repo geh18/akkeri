@@ -114,7 +114,8 @@ def petition():
 
     petition = models.Petition.query.filter_by(is_active=True).one_or_none()
 
-    signatures = models.PetitionSignature.query.filter_by(petition=petition).all()
+    signatures = models.PetitionSignature.query.filter_by(petition=petition).\
+                    order_by(desc(models.PetitionSignature.added)).all()
 
     count = len(signatures)
     
