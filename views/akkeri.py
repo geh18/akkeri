@@ -66,7 +66,6 @@ def facebook_authorized(resp):
         sign.petition_id = petition.id
         sign.fb_id = me.data['id']
         sign.fb_name = me.data['name']
-        sign.fb_email = me.data['email']
         sign.fb_image = image.data['data']['url']
         db.session.add(sign)
         db.session.commit()
