@@ -39,7 +39,7 @@
         data-share="true"></div>                
 
                 <h3 class="mb-15" style="margin-bottom: 30px;">{{ count }} Hafa lagt málinu lið núþegar </h3>
-                {% for sign in signatures %}
+                {% for sign in signatures[:500] %}
                     <div class="row mt-15">
                          <div class="col-xs-2"> 
                              <img src="{{ sign.fb_image }}" style="width: 70%;">
